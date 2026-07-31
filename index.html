@@ -1,1 +1,2568 @@
+<!DOCTYPE html>
+<html lang="tl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Padre Garcia, Batangas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#8B4513',
+                        secondary: '#D2691E',
+                        accent: '#F5DEB3',
+                        dark: '#5C2E0A',
+                        light: '#FFF8E7'
+                    },
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .pattern-bg {
+                background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23D2B48C' fill-opacity='0.2' fill-rule='evenodd'%3E%3Cpath d='M0 20L20 0l20 20-20 20z'/%3E%3C/g%3E%3C/svg%3E");
+            }
 
+            .hero-bg {
+                background-image: url("Screenshot 2026-07-17 152240.png");
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
+                min-height: 100vh;
+                width: 100%;
+            }
+
+            .text-shadow-lg {
+                text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+            }
+            .text-shadow-md {
+                text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.7);
+            }
+
+            .timeline-line {
+                position: absolute;
+                top: 50%;
+                left: 0;
+                width: 100%;
+                height: 2px;
+                background-color: #8B735B;
+                transform: translateY(-50%);
+                z-index: 1;
+            }
+            .timeline-item {
+                position: relative;
+                z-index: 2;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+            .timeline-item:hover {
+                transform: translateY(-6px);
+                opacity: 0.92;
+            }
+            .circle {
+                width: 120px;
+                height: 120px;
+                border-radius: 50%;
+                border: 3px solid #8B735B;
+                overflow: hidden;
+                background-color: #f5f0eb;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto;
+                transition: border-color 0.3s ease;
+            }
+            .timeline-item:hover .circle {
+                border-color: #5A4838;
+                box-shadow: 0 0 10px rgba(90, 72, 56, 0.3);
+            }
+            .circle img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+            .info-box {
+                transition: all 0.3s ease;
+            }
+            .active .info-box {
+                border-color: #5A4838;
+                background-color: #f8f5f2;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+            .fade-in {
+                opacity: 0;
+                transform: translateY(20px);
+                transition: all 0.6s ease-out;
+            }
+            .fade-in.active {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            /* 🐄Cow */
+            :root {
+                --cow-base: #fbf9f6;
+                --cow-shadow: #e2ded5;
+                --spot-color: #403d39;
+                --snout-color: #fca08d;
+                --nostril-color: #e58270;
+                --horn-color: #fbe0ab;
+                --inner-ear: #ffbcae;
+            }
+
+            .cow-narrator {
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                z-index: 999;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+
+            .dialog-box {
+                background: white;
+                padding: 12px 18px;
+                border-radius: 20px;
+                box-shadow: 0 8px 0px rgba(0,0,0,0.05), 0 10px 20px rgba(0,0,0,0.05);
+                font-size: 1rem;
+                font-weight: bold;
+                color: #5d574f;
+                margin-bottom: 15px;
+                position: absolute;
+                bottom: 100%;
+                right: 0;
+                min-width: 180px;
+                max-width: 250px;
+                text-align: center;
+                transition: all 0.2s ease;
+                border: 3px solid #ebd8bd;
+                display: none;
+            }
+
+            .dialog-box::after {
+                content: '';
+                position: absolute;
+                bottom: -15px;
+                right: 30px;
+                border-width: 15px 15px 0;
+                border-style: solid;
+                border-color: white transparent;
+                display: block;
+                width: 0;
+            }
+            
+            .dialog-box::before {
+                content: '';
+                position: absolute;
+                bottom: -19px;
+                right: 28px;
+                border-width: 16px 16px 0;
+                border-style: solid;
+                border-color: #ebd8bd transparent;
+                display: block;
+                width: 0;
+            }
+
+            .cow-container {
+                position: relative;
+                width: 160px;
+                height: 140px;
+            }
+
+            .bounce-active {
+                animation: cowBounce 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+            }
+
+            @keyframes cowBounce {
+                0% { transform: scale(1); }
+                30% { transform: scale(1.15, 0.85) translateY(10px); }
+                60% { transform: scale(0.9, 1.15) translateY(-20px); }
+                80% { transform: scale(1.05, 0.95) translateY(5px); }
+                100% { transform: scale(1) translateY(0); }
+            }
+
+            .cow-head {
+                position: absolute;
+                width: 140px;
+                height: 115px;
+                background: var(--cow-base);
+                border-radius: 110px / 90px;
+                left: 10px;
+                top: 15px;
+                box-shadow: inset 0 -12px 0 var(--cow-shadow), 0 10px 15px rgba(0,0,0,0.06);
+                overflow: hidden;
+                z-index: 2;
+            }
+
+            .horn {
+                position: absolute;
+                width: 22px;
+                height: 40px;
+                background: var(--horn-color);
+                border-radius: 50% 50% 20% 20% / 70% 70% 30% 30%;
+                top: -5px;
+                box-shadow: inset -4px -4px 0 rgba(0,0,0,0.08);
+                z-index: 1;
+            }
+            .horn.left { left: 35px; transform: rotate(-15deg); }
+            .horn.right { right: 35px; transform: rotate(15deg); }
+
+            .ear {
+                position: absolute;
+                width: 35px;
+                height: 28px;
+                background: var(--cow-base);
+                border-radius: 50%;
+                top: 35px;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.04);
+                z-index: 1;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            .ear::after {
+                content: '';
+                width: 22px;
+                height: 16px;
+                background: var(--inner-ear);
+                border-radius: 50%;
+            }
+            .ear.left { left: -10px; transform: rotate(-10deg); box-shadow: inset 4px -4px 0 var(--cow-shadow); }
+            .ear.right { right: -10px; transform: rotate(10deg); box-shadow: inset -4px -4px 0 var(--cow-shadow); }
+
+            .spot-left {
+                position: absolute;
+                width: 55px;
+                height: 65px;
+                background: var(--spot-color);
+                border-radius: 50% 40% 60% 40% / 40% 50% 40% 70%;
+                left: -10px;
+                top: 15px;
+                transform: rotate(10deg);
+            }
+            .spot-right {
+                position: absolute;
+                width: 60px;
+                height: 70px;
+                background: var(--spot-color);
+                border-radius: 40% 60% 40% 60% / 50% 40% 70% 40%;
+                right: -8px;
+                top: 5px;
+                transform: rotate(-5deg);
+            }
+
+            .eye {
+                position: absolute;
+                width: 10px;
+                height: 10px;
+                background: #222;
+                border-radius: 50%;
+                top: 50px;
+                z-index: 4;
+                transition: all 0.15s ease;
+            }
+            .eye.left { left: 40px; }
+            .eye.right { right: 40px; }
+
+            .snout {
+                position: absolute;
+                width: 95px;
+                height: 60px;
+                background: var(--snout-color);
+                border-radius: 80px / 55px;
+                bottom: -5px;
+                left: 50%;
+                transform: translateX(-50%);
+                z-index: 5;
+                box-shadow: inset 0 -6px 0 rgba(0,0,0,0.1);
+            }
+
+            .nostril {
+                position: absolute;
+                width: 7px;
+                height: 10px;
+                background: var(--nostril-color);
+                border-radius: 50%;
+                top: 20px;
+            }
+            .nostril.left { left: 32px; transform: rotate(-5deg); }
+            .nostril.right { right: 32px; transform: rotate(5deg); }
+
+            /* cute emotes */
+            .cow-container.happy .eye {
+                height: 6px;
+                background: transparent;
+                border-top: 4px solid #222;
+                border-radius: 50% 50% 0 0;
+                top: 52px;
+            }
+            .cow-container.surprised .eye {
+                width: 13px;
+                height: 13px;
+                top: 48px;
+            }
+            .cow-container.sleepy .eye {
+                height: 3px;
+                width: 12px;
+                border-radius: 2px;
+                top: 54px;
+            }
+            .cow-container.wink .eye.left {
+                height: 4px;
+                background: transparent;
+                border-bottom: 3px solid #222;
+                border-radius: 0 0 50% 50%;
+                top: 52px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-light text-gray-800 font-sans pattern-bg">
+
+    <!-- Navigation Bar -->
+   <nav id="navbar" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-[1200px] transition-all duration-300">
+    <!-- Main Floating Glass Container -->
+    <div class="px-6 py-2.5 flex justify-between items-center bg-white/80 backdrop-blur-md rounded-full shadow-lg border border-stone-200/50">
+        
+        <!-- Logo -->
+        <a href="#home" class="text-lg md:text-xl font-bold bg-gradient-to-r from-stone-900 to-amber-600 bg-clip-text text-transparent hover:scale-105 transition-transform duration-300 whitespace-nowrap">
+            Padre Garcia, Batangas
+        </a>
+
+        <!-- CP/MOBILE Hamburger Icon -->
+        <button id="menu-toggle" class="md:hidden text-stone-800 text-2xl focus:outline-none transition-transform active:scale-90">
+            <i class="fa fa-bars"></i>
+        </button>
+
+        <!-- Desktop Navigation Menu with Cool Liquid Sliding Underlay -->
+        <ul id="nav-menu" class="hidden md:flex items-center space-x-1 text-sm font-semibold tracking-wide text-stone-800 relative">
+            <style>
+                /*Liquid Sliding Animation  */
+                .liquid-nav-link {
+                    position: relative;
+                    padding: 8px 16px;
+                    border-radius: 9999px;
+                    transition: color 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+                    z-index: 1;
+                }
+                /*  slides */
+                .liquid-nav-link::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: linear-gradient(135deg, rgba(44, 26, 17, 0.08), rgba(217, 119, 6, 0.12));
+                    border-radius: 9999px;
+                    z-index: -1;
+                    transform: scale(0);
+                    opacity: 0;
+                    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease;
+                }
+                /* eme */
+                .liquid-nav-link:hover::before {
+                    transform: scale(1);
+                    opacity: 1;
+                }
+                .liquid-nav-link:hover {
+                    color: #D97706; /* Changes to elegant livestock Amber on hover */
+                }
+            </style>
+            <li><a href="#home" class="liquid-nav-link">Pangunahin</a></li>
+            <li><a href="#explore-map" class="liquid-nav-link">Mapa</a></li>
+            <li><a href="#history" class="liquid-nav-link">Kasaysayan</a></li>
+            <li><a href="#culture" class="liquid-nav-link">Kultura</a></li>
+            <li><a href="#festivals" class="liquid-nav-link">Pagdiriwang</a></li>
+            <li><a href="#cattle" class="liquid-nav-link">Industriya ng Baka</a></li>
+            <li><a href="#values" class="liquid-nav-link">Pagpapahalaga</a></li>
+            <li><a href="#gallery" class="liquid-nav-link">Mga Larawan</a></li>
+        </ul>
+    </div>
+
+    <!-- Mobile ponz -->
+    <div id="mobile-menu" class="hidden md:hidden mt-2 bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-stone-200/50 transition-all duration-300">
+        <ul class="flex flex-col p-4 space-y-1 text-sm font-semibold text-stone-800">
+            <li><a href="#home" class="block px-4 py-2.5 rounded-xl transition-all duration-300 hover:text-amber-600 hover:bg-amber-50/60 hover:pl-6">Pangunahing Pahina</a></li>
+            <li><a href="#explore-map" class="block px-4 py-2.5 rounded-xl transition-all duration-300 hover:text-amber-600 hover:bg-amber-50/60 hover:pl-6">Mapa ng Lugar</a></li>
+            <li><a href="#history" class="block px-4 py-2.5 rounded-xl transition-all duration-300 hover:text-amber-600 hover:bg-amber-50/60 hover:pl-6">Kasaysayan</a></li>
+            <li><a href="#culture" class="block px-4 py-2.5 rounded-xl transition-all duration-300 hover:text-amber-600 hover:bg-amber-50/60 hover:pl-6">Kultura</a></li>
+            <li><a href="#festivals" class="block px-4 py-2.5 rounded-xl transition-all duration-300 hover:text-amber-600 hover:bg-amber-50/60 hover:pl-6">Mga Pagdiriwang</a></li>
+            <li><a href="#cattle" class="block px-4 py-2.5 rounded-xl transition-all duration-300 hover:text-amber-600 hover:bg-amber-50/60 hover:pl-6">Industriya ng Baka</a></li>
+            <li><a href="#values" class="block px-4 py-2.5 rounded-xl transition-all duration-300 hover:text-amber-600 hover:bg-amber-50/60 hover:pl-6">Pagpapahalagang Pilipino</a></li>
+            <li><a href="#gallery" class="block px-4 py-2.5 rounded-xl transition-all duration-300 hover:text-amber-600 hover:bg-amber-50/60 hover:pl-6">Mga Larawan</a></li>
+        </ul>
+    </div>
+</nav>
+
+    <!-- Home Section -->
+<!-- Home / Welcome Section -->
+<section id="home" class="hero-bg min-h-screen flex flex-col justify-center items-center text-center px-4 pt-20 text-stone-800 relative overflow-hidden">
+    <!-- Malambot at Banayad na Cream Tint Overlay -->
+    <div class="absolute inset-0 bg-gradient-to-b from-[#fbf9f4]/40 via-transparent to-[#f4eee1]/50 z-0 pointer-events-none"></div>
+
+    <!-- Estilo, Fonts, at Animasyon -->
+    <style>
+        @import url('https://googleapis.com');
+
+        /* Animasyon */
+        .letter {
+            display: inline-block;
+            opacity: 0;
+            transform: translateY(25px) rotate(-2deg);
+            animation: letterWave 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            margin: 0 1px;
+        }
+
+        @keyframes letterWave {
+            0% {
+                opacity: 0;
+                transform: translateY(25px) rotate(-2deg);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) rotate(0);
+            }
+        }
+
+        /* Animasyon 2 */
+        .fade-up {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) 1.2s forwards;
+        }
+
+        @keyframes fadeUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Soft Earthy Charcoal and Subtle Gold Shadow */
+        .glow-text {
+            color: #4A3728; 
+            text-shadow: 0 2px 4px rgba(74, 55, 40, 0.15),
+                         0 0 20px rgba(217, 119, 6, 0.1);
+        }
+
+        /* Elegant Cream/Gold Lines  */
+        .decor-left, .decor-right {
+            position: absolute;
+            top: 50%;
+            width: 100px;
+            height: 2px;
+            z-index: 1;
+            opacity: 0.6;
+            transform: translateY(-50%);
+        }
+        .decor-left {
+            left: calc(50% - 240px);
+            background: linear-gradient(90deg, transparent, #D97706, #4A3728);
+        }
+        .decor-right {
+            right: calc(50% - 240px);
+            background: linear-gradient(90deg, #4A3728, #D97706, transparent);
+        }
+
+        /* Soft Cream Ambient Particles */
+        .dot {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(217,119,6,0.15) 0%, rgba(217,119,6,0) 70%);
+            filter: blur(2px);
+        }
+        .dot-1 { width: 50px; height: 50px; top: 15%; left: 10%; animation: floatAmbient 14s ease-in-out infinite; }
+        .dot-2 { width: 70px; height: 70px; bottom: 25%; right: 8%; animation: floatAmbient 18s ease-in-out infinite 2s; }
+        .dot-3 { width: 40px; height: 40px; top: 70%; left: 15%; animation: floatAmbient 16s ease-in-out infinite 4s; }
+        .dot-4 { width: 60px; height: 60px; bottom: 12%; right: 20%; animation: floatAmbient 20s ease-in-out infinite 1s; }
+
+        @keyframes floatAmbient {
+            0%, 100% { transform: translateY(0) translateX(0); opacity: 0.4; }
+            50% { transform: translateY(-20px) translateX(10px); opacity: 0.8; }
+        }
+
+        /* Premium Earthy Button */
+        .btn-earth {
+            background: #D97706; 
+            color: #FFFFFF;
+            box-shadow: 0 8px 20px rgba(217, 119, 6, 0.25);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .btn-earth::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+            transition: all 0.6s ease;
+        }
+        .btn-earth:hover::before {
+            left: 100%;
+        }
+        .btn-earth:hover {
+            background: #B45309; 
+            box-shadow: 0 10px 25px rgba(180, 83, 9, 0.35);
+            transform: translateY(-2px);
+        }
+    </style>
+
+    <!-- effect/particles -->
+    <div class="dot dot-1"></div>
+    <div class="dot dot-2"></div>
+    <div class="dot dot-3"></div>
+    <div class="dot dot-4"></div>
+
+    <!-- ? -->
+    <div class="max-w-4xl relative z-10 px-8 py-10 rounded-3xl border border-[#4A3728]/5 bg-white/20 backdrop-blur-[2px] shadow-sm fade-up">
+        
+        <!-- OG Greeting  -->
+        <h2 class="text-sm md:text-base font-medium tracking-[0.25em] uppercase mb-4 text-amber-800" style="font-family: 'Poppins', sans-serif;" id="greeting"></h2>
+
+        <!-- Nka-horizontal -->
+        <div class="relative flex items-center justify-center mb-6 w-full">
+            <div class="decor-left hidden xl:block"></div>
+            
+            <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-tight glow-text whitespace-nowrap" 
+                style="font-family: 'Cinzel', serif;" 
+                id="title">
+                <!--JavaScript text injection  -->
+            </h1>
+            
+            <div class="decor-right hidden xl:block"></div>
+        </div>
+
+        <!-- text color  -->
+        <p class="text-base md:text-lg max-w-2xl mx-auto mb-10 text-stone-600 font-medium tracking-wide" style="font-family: 'Poppins', sans-serif;">
+            Tahanan ng Kasaysayan, Kultura, at Matatag na Pamayanan
+        </p>
+
+        <!-- Pindutan na may Soft Amber/Orange theme -->
+        <a href="#explore-map" class="btn-earth inline-flex items-center space-x-2 px-10 py-4 rounded-full text-base font-semibold tracking-wide" style="font-family: 'Poppins', sans-serif;">
+            <span>Simulan ang Paggalugad</span>
+            <i class="fa-solid fa-arrow-right text-xs"></i>
+        </a>
+    </div>
+</section>
+
+
+
+    <!-- animation3 -->
+    <script>
+        function animateText(elementId, text, delayStep = 0.07) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = '';
+            [...text].forEach((char, index) => {
+                const span = document.createElement('span');
+                span.className = 'letter';
+                span.style.animationDelay = `${index * delayStep}s`;
+                span.textContent = char === ' ' ? '\u00A0' : char;
+                element.appendChild(span);
+            });
+        }
+
+        window.addEventListener('load', () => {
+            animateText('greeting', 'Maligayang Pagdating sa');
+            animateText('title', 'PADRE GARCIA', 0.05);
+        });
+    </script>
+</section>
+    <!-- Script para gumana ang animation -->
+    <script>
+        function animateText(elementId, text, delayStep = 0.07) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = '';
+            [...text].forEach((char, index) => {
+                const span = document.createElement('span');
+                span.className = 'letter';
+                span.style.animationDelay = `${index * delayStep}s`;
+                span.textContent = char === ' ' ? '\u00A0' : char;
+                element.appendChild(span);
+            });
+        }
+
+        // Simulan ang animation kapag nabuksan ang pahina
+        window.addEventListener('load', () => {
+            animateText('greeting', 'Maligayang Pagdating sa');
+            animateText('title', 'PADRE GARCIA, BATANGAS', 0.06);
+        });
+    </script>
+</section>
+
+    <!-- animation -->
+    <script>
+        function animateText(elementId, text, delayStep = 0.08) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = '';
+            [...text].forEach((char, index) => {
+                const span = document.createElement('span');
+                span.className = 'letter';
+                span.style.animationDelay = `${index * delayStep}s`;
+                span.textContent = char === ' ' ? '\u00A0' : char;
+                element.appendChild(span);
+            });
+        }
+
+        // Run animation when page loads
+        window.addEventListener('load', () => {
+            animateText('greeting', 'Maligayang Pagdating sa');
+            animateText('title', 'PADRE GARCIA, BATANGAS', 0.06);
+        });
+    </script>
+</section>
+
+    <!-- Interactive Map Section -->
+   <!-- Interactive Culture Map Section -->
+<section id="explore-map" class="py-24 px-4 bg-transparent relative z-10 overflow-hidden">
+    <!-- Immersive Background Tech-Aura Rings -->
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[750px] h-[450px] rounded-full bg-gradient-to-tr from-[#D97706]/5 to-transparent blur-[130px] pointer-events-none z-0"></div>
+
+    <div class="container mx-auto relative z-10">
+        
+        <!-- Upgraded Pro Cinematic Header -->
+        <div class="text-center mb-16">
+            <span class="text-xs font-black uppercase tracking-[0.45em] text-[#D97706] block mb-2" style="font-family: 'Poppins', sans-serif;">
+                🎯 MAP MATRIX MISSION
+            </span>
+            <h2 class="text-3xl md:text-5xl font-black text-[#4A3728] tracking-tight uppercase" style="font-family: 'Cinzel', serif;">
+                Interaktibong Mapa ng Kultura
+            </h2>
+            <div class="w-20 h-[3px] bg-gradient-to-r from-transparent via-[#D97706] to-transparent mx-auto mt-3 mb-4"></div>
+            <p class="text-stone-500 text-sm md:text-base max-w-xl mx-auto font-medium" style="font-family: 'Poppins', sans-serif;">
+                🎯 <span class="text-[#D97706]">Pindutin ang mga icon o lokasyon</span> upang i-unlock ang nakatagong kasaysayan, kultura, at kwento ng Padre Garcia, Batangas.
+            </p>
+        </div>
+
+        <!-- Custom Complex Animation & Mechanical Frame Styles -->
+        <style>
+            /* Main Advanced Tactical Framing Wrapper */
+            .tactical-viewport {
+                background: rgba(255, 255, 255, 0.4);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                border: 2px solid rgba(74, 55, 40, 0.15);
+                transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+                position: relative;
+                transform-style: preserve-3d;
+                perspective: 1000px;
+            }
+            .tactical-viewport:hover {
+                border-color: rgba(217, 119, 6, 0.4);
+                box-shadow: 0 40px 80px rgba(74, 55, 40, 0.16), 0 0 30px rgba(217, 119, 6, 0.05);
+                transform: translateY(-4px);
+            }
+
+            /* Complex Corner Crosshairs with Expanding Mechanics */
+            .crosshair-corner {
+                position: absolute;
+                width: 24px;
+                height: 24px;
+                border-color: #D97706;
+                opacity: 0.3;
+                transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                pointer-events: none;
+                z-index: 30;
+            }
+            .tactical-viewport:hover .crosshair-corner { opacity: 1; }
+            
+            .ch-tl { top: 16px; left: 16px; border-top: 3px solid; border-left: 3px solid; }
+            .ch-tr { top: 16px; right: 16px; border-top: 3px solid; border-right: 3px solid; }
+            .ch-bl { bottom: 16px; left: 16px; border-bottom: 3px solid; border-left: 3px solid; }
+            .ch-br { bottom: 16px; right: 16px; border-bottom: 3px solid; border-right: 3px solid; }
+            
+            .tactical-viewport:hover .ch-tl { transform: translate(-4px, -4px) scale(1.1); }
+            .tactical-viewport:hover .ch-tr { transform: translate(4px, -4px) scale(1.1); }
+            .tactical-viewport:hover .ch-bl { transform: translate(-4px, 4px) scale(1.1); }
+            .tactical-viewport:hover .ch-br { transform: translate(4px, 4px) scale(1.1); }
+
+            /* HUD Status Plate */
+            .hud-plate {
+                background: rgba(44, 26, 17, 0.88);
+                backdrop-filter: blur(8px);
+                border: 1px solid rgba(255, 215, 138, 0.2);
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+                transition: all 0.4s ease;
+            }
+            .tactical-viewport:hover .hud-plate {
+                border-color: #D97706;
+            }
+
+            /* Continuous Scanning Radar Line Overlay */
+            .radar-sweep-line {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(to bottom, transparent 48%, rgba(217, 119, 6, 0.12) 50%, transparent 52%);
+                pointer-events: none;
+                z-index: 10;
+                animation: scanLinear 4s linear infinite;
+                mix-blend-mode: overlay;
+                opacity: 0.7;
+            }
+            @keyframes scanLinear {
+                0% { transform: translateY(-100%); }
+                100% { transform: translateY(100%); }
+            }
+
+            /* Rotating Tech Grid Background Circle Accent */
+            .rotating-compass-bg {
+                position: absolute;
+                top: -50px;
+                right: -50px;
+                width: 250px;
+                height: 250px;
+                border: 1px dashed rgba(217, 119, 6, 0.15);
+                border-radius: 50%;
+                pointer-events: none;
+                z-index: 10;
+                animation: slowWheel 25s linear infinite;
+            }
+            .rotating-compass-bg::before {
+                content: '';
+                position: absolute;
+                inset: 30px;
+                border: 1px solid rgba(74, 55, 40, 0.05);
+                border-radius: 50%;
+            }
+            @keyframes slowWheel {
+                to { transform: rotate(360deg); }
+            }
+
+            /* Smooth bouncing live tracking sonar marker */
+            @keyframes beaconWave {
+                0% { transform: scale(1); opacity: 1; }
+                100% { transform: scale(2.2); opacity: 0; }
+            }
+            .beacon-pulse { animation: beaconWave 2s infinite ease-out; }
+        </style>
+
+        <!-- MAP -->
+        <div class="max-w-5xl mx-auto p-4 bg-white/20 border border-stone-200/60 rounded-[36px] shadow-lg">
+            <div class="tactical-viewport w-full h-[450px] md:h-[550px] rounded-3xl overflow-hidden">
+                
+                <!-- 1. Running Radar Scanning Horizon Line Overlay -->
+                <div class="radar-sweep-line"></div>
+                
+                <!-- 2. Rotating -->
+                <div class="rotating-compass-bg hidden sm:block"></div>
+
+                <!-- 3. Dynamic Corner Target Locking Pins -->
+                <div class="crosshair-corner ch-tl"></div>
+                <div class="crosshair-corner ch-tr"></div>
+                <div class="crosshair-corner ch-bl"></div>
+                <div class="crosshair-corner ch-br"></div>
+
+                <!-- 4. Top Left Interface Component (Live System Tracking Node) -->
+                <div class="hud-plate absolute top-5 left-5 flex items-center space-x-2.5 px-4 py-2 rounded-xl z-20 font-bold text-[11px] tracking-[0.15em] text-[#FFD78A] select-none" style="font-family: 'Poppins', sans-serif;">
+                    <div class="relative w-2.5 h-2.5 flex items-center justify-center">
+                        <div class="absolute w-full h-full bg-emerald-400 rounded-full beacon-pulse"></div>
+                        <div class="w-1.5 h-1.5 bg-emerald-500 rounded-full relative z-10"></div>
+                    </div>
+                    <span>MAP SECTOR ACTIVE </span>
+                </div>
+
+                <!-- 5. Bottom Right Interface Component (Aesthetic Live Coordinates Counter) -->
+                <div class="hud-plate absolute bottom-5 right-5 flex flex-col space-y-0.5 px-4 py-2 rounded-xl z-20 font-mono text-[10px] tracking-widest text-stone-400 select-none text-right">
+                    <div class="text-[#D97706] font-bold">LAT: 13.8791° N</div>
+                    <div>LONG: 121.2136° E</div>
+                </div>
+
+                <!-- 6. Floating Dynamic Helper Interface Controls -->
+                <div class="absolute top-5 right-5 flex space-x-2 z-20">
+                    <button class="w-9 h-9 flex items-center justify-center rounded-xl bg-stone-900/80 backdrop-blur-sm border border-white/10 text-[#FFD78A] hover:bg-[#D97706] hover:text-white transition-all duration-300 shadow-md active:scale-90 cursor-pointer" title="Recenter Viewport">
+                        <i class="fa-solid fa-crosshairs text-xs"></i>
+                    </button>
+                    <button class="w-9 h-9 flex items-center justify-center rounded-xl bg-stone-900/80 backdrop-blur-sm border border-white/10 text-[#FFD78A] hover:bg-[#D97706] hover:text-white transition-all duration-300 shadow-md active:scale-90 cursor-pointer" title="Toggle Grid Overlay">
+                        <i class="fa-solid fa-circle-nodes text-xs"></i>
+                    </button>
+                </div>
+
+                <!-- 7. Original Core Map Placement Module Node (100% Unbroken Code Interface Integration) -->
+                <div id="map-container" class="w-full h-full bg-[#f4eee1] relative z-0">
+                    <!-- Your third-party injection scripts (Leaflet, OpenLayers, Google Map Canvas) mount perfectly inside here -->
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</section>
+
+
+    <!-- Popup Modal -->
+    <!-- Interactive Game-Style Quest Codex Modal -->
+<div id="info-modal" class="fixed inset-0 bg-stone-900/60 backdrop-blur-md z-50 flex items-center justify-center hidden p-4 transition-all duration-500">
+    
+    <!-- Outer Card: RPG Codex Theme -->
+    <div class="bg-[#fbf9f4] border-2 border-[#4A3728]/30 rounded-3xl max-w-2xl w-full shadow-[0_20px_50px_rgba(74,55,40,0.25),inset_0_1px_0_rgba(255,255,255,0.6)] transform transition-all duration-500 scale-95 opacity-0 relative overflow-hidden" 
+         id="modal-content">
+        
+        <!-- Top progress bar color accent -->
+        <div class="h-2 w-full bg-gradient-to-r from-transparent via-[#D97706] to-transparent opacity-80"></div>
+        
+        <div class="p-6 md:p-8">
+            <!-- Header Section (Quest Title Banner) -->
+            <div class="flex justify-between items-start mb-6 border-b border-[#4A3728]/10 pb-4">
+                <div class="flex flex-col">
+                    <span class="text-[10px] uppercase font-bold tracking-[0.25em] text-[#D97706] mb-1 animate-pulse" style="font-family: 'Poppins', sans-serif;">
+                        ✨ Kabanata ng Kasaysayan
+                    </span>
+                    <h3 id="modal-title" class="text-2xl md:text-3xl font-black tracking-tight text-[#4A3728]" style="font-family: 'Cinzel', serif;">
+                        <!-- Titulo mula sa dati mong JS -->
+                    </h3>
+                </div>
+                
+                <!-- Circular Exit Button -->
+                <button onclick="closeInfo()" 
+                        class="w-10 h-10 flex items-center justify-center rounded-full bg-stone-200/60 border border-[#4A3728]/10 text-[#4A3728] hover:text-white hover:bg-red-600 hover:border-red-700 transition-all duration-300 active:scale-90 shadow-sm cursor-pointer">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
+            <!-- Content Area: Story Scroll Interface Layout -->
+            <div class="max-h-[50vh] overflow-y-auto pr-2 scrollbar-thin text-stone-700 leading-relaxed text-base space-y-4 mb-8 font-medium" 
+                 id="modal-body" 
+                 style="font-family: 'Poppins', sans-serif;">
+                <!-- Ang nilalaman ng kasaysayan ay papasok pa rin dito mula sa dati mong JS -->
+            </div>
+
+            <!-- Footer Panel: Game Navigation & Achievement System -->
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t border-[#4A3728]/10">
+                
+                <!-- Achievement Checkbox -->
+                <label class="flex items-center space-x-3 cursor-pointer group select-none">
+                    <div class="relative">
+                        <input type="checkbox" id="quest-check" class="sr-only peer" />
+                        <div class="w-6 h-6 border-2 border-[#4A3728]/40 rounded-md bg-white peer-checked:bg-[#D97706] peer-checked:border-[#D97706] transition-all duration-300 flex items-center justify-center">
+                            <i class="fa-solid fa-check text-white text-xs opacity-0 peer-checked:opacity-100 transition-opacity duration-200"></i>
+                        </div>
+                    </div>
+                    <span class="text-xs font-bold text-stone-500 group-hover:text-[#D97706] transition-colors uppercase tracking-wider" style="font-family: 'Poppins', sans-serif;">
+                        Nabasa ko na ito ✔
+                    </span>
+                </label>
+
+                <!-- Navigation Controls -->
+                <div class="flex items-center space-x-2 w-full sm:w-auto justify-end" style="font-family: 'Poppins', sans-serif;">
+                    <button onclick="closeInfo()" 
+                            class="px-6 py-3 rounded-full text-xs font-bold uppercase tracking-wider text-stone-600 hover:bg-stone-200/50 border border-stone-300/40 transition-all active:scale-95 cursor-pointer">
+                        Bumalik
+                    </button>
+                    
+                    <!-- Ang Pindutan para sa Susunod na Tala -->
+                    <button onclick="triggerNextQuest()" 
+                            class="px-6 py-3 bg-gradient-to-r from-[#D97706] to-[#B45309] text-white rounded-full text-xs font-bold uppercase tracking-wider shadow-md hover:shadow-lg hover:shadow-amber-700/20 hover:scale-105 active:scale-95 transition-all flex items-center space-x-2 cursor-pointer group">
+                        <span>Susunod na Tala</span>
+                        <i class="fa-solid fa-arrow-right text-[10px] transition-transform duration-300 group-hover:translate-x-1"></i>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- ========================================================
+
+     ======================================================== -->
+<script>
+    function triggerNextQuest() {
+        // 1. task box para sa visual achievement feel
+        const checkbox = document.getElementById('quest-check');
+        if(checkbox) checkbox.checked = true;
+        
+        // 2. Isasara ang kasalukuyang screen nang may maayos na transition effect
+        closeInfo();
+        
+        // 3. Naglalagay ng log sa console upang masubaybayan ang laro
+        console.log("Nag-click ang user para sa susunod na yugto.");
+       
+    }
+</script>
+
+
+   <!-- History Section -->
+<section id="history" class="py-20 px-4 bg-[#fbf9f4] relative overflow-hidden">
+    <!-- Subtle Background Lighting Effects to match your theme -->
+    <div class="absolute top-1/4 left-[-10%] w-[400px] h-[400px] rounded-full bg-amber-500/5 blur-[120px] pointer-events-none"></div>
+    <div class="absolute bottom-1/4 right-[-10%] w-[400px] h-[400px] rounded-full bg-amber-600/5 blur-[120px] pointer-events-none"></div>
+
+    <div class="max-w-7xl mx-auto relative z-10">
+        <!-- Upgraded Elegant Header Track -->
+        <div class="text-center mb-16">
+            <span class="text-xs font-bold uppercase tracking-[0.4em] text-amber-700/80 block mb-3">
+                📜 Chronology Quest
+            </span>
+            <h1 class="text-3xl md:text-5xl font-black text-[#4A3728] tracking-tight mb-4 uppercase drop-shadow-sm" style="font-family: 'Cinzel', serif;">
+                Kasaysayan Ng Padre Garcia
+            </h1>
+            <div class="w-24 h-[3px] bg-gradient-to-r from-transparent via-[#D97706] to-transparent mx-auto mb-4"></div>
+            <p class="text-sm md:text-base text-stone-500 max-w-xl mx-auto font-medium" style="font-family: 'Poppins', sans-serif;">
+                💡 <span class="text-[#D97706]">I-click ang yugto</span> upang suriin ang mga natatanging tala at makasaysayang kaganapan.
+            </p>
+        </div>
+
+        <!-- Custom CSS Layer for Interactive Game-Style Timeline Map -->
+        <style>
+            /* Custom Scrollbar for hidden preview boxes */
+            .custom-scroll::-webkit-scrollbar {
+                width: 4px;
+            }
+            .custom-scroll::-webkit-scrollbar-thumb {
+                background: rgba(217, 119, 6, 0.3);
+                border-radius: 99px;
+            }
+
+            /* Main Vector Navigation Connector Line */
+            .timeline-track-line {
+                position: absolute;
+                top: 75px;
+                left: 5%;
+                width: 90%;
+                height: 4px;
+                background: linear-gradient(90deg, rgba(217,119,6,0.1) 0%, rgba(217,119,6,0.8) 50%, rgba(217,119,6,0.1) 100%);
+                border-radius: 99px;
+                z-index: 0;
+            }
+
+            /* Golden Ring Dynamic Level Circle */
+            .quest-circle {
+                width: 140px;
+                height: 140px;
+                border-radius: 50%;
+                border: 4px solid #fff;
+                box-shadow: 0 10px 25px rgba(74, 55, 40, 0.12);
+                position: relative;
+                overflow: hidden;
+                background: #fff;
+                transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+                z-index: 2;
+            }
+            .quest-circle::after {
+                content: '';
+                position: absolute;
+                inset: -4px;
+                border-radius: 50%;
+                border: 2px solid transparent;
+                transition: all 0.4s ease;
+            }
+
+            /* Interactive Hover Mechanics */
+            .timeline-quest-card:hover .quest-circle {
+                transform: translateY(-8px) scale(1.05);
+                box-shadow: 0 15px 30px rgba(217, 119, 6, 0.25);
+            }
+            .timeline-quest-card:hover .quest-circle::after {
+                border-color: #D97706;
+                transform: scale(1.04);
+            }
+            .timeline-quest-card:hover .quest-badge {
+                background: #4A3728;
+                color: #FFD78A;
+                box-shadow: 0 8px 15px rgba(74, 55, 40, 0.2);
+            }
+        </style>
+
+        <!-- Horizontal Desktop / Vertical Mobile Grid Layout -->
+        <!-- Master 3D Matrix Container for the Timeline Track Layout -->
+    <div class="relative flex flex-col lg:flex-row justify-between items-center lg:items-start gap-12 lg:gap-4 w-full py-10" style="perspective: 1000px;">
+            
+        <!-- Dynamic Vector Track Connector Line with Advanced Metallic Shimmer -->
+        <div class="timeline-track-line hidden lg:block absolute" 
+             style="top: 82px; left: 5%; width: 90%; height: 4px; background: linear-gradient(90deg, rgba(217,119,6,0.1) 0%, #D97706 50%, rgba(217,119,6,0.1) 100%); border-radius: 99px; z-index: 0;"></div>
+
+        <!-- Custom Advanced Special Effects Layer for Next-Gen Interactions -->
+        <style>
+            /* The 3D Matrix Node Container */
+            .timeline-quest-card {
+                transform-style: preserve-3d;
+                transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+
+            /* Next-Gen Holographic Circular Frame */
+            .quest-circle-portal {
+                width: 130px;
+                height: 130px;
+                border-radius: 50%;
+                border: 4px solid #fff;
+                box-shadow: 0 10px 30px rgba(74, 55, 40, 0.12);
+                position: relative;
+                overflow: hidden;
+                background: #fff;
+                transform-style: preserve-3d;
+                transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+                z-index: 2;
+            }
+
+            /* Glowing Golden Ring Wave on Hover */
+            .quest-circle-portal::after {
+                content: '';
+                position: absolute;
+                inset: -4px;
+                border-radius: 50%;
+                border: 2px solid transparent;
+                transform: scale(1);
+                transition: all 0.5s ease;
+            }
+
+            /* 3D Depth Pushing Out for Text Badges */
+            .parallax-badge-layer {
+                transform: translateZ(35px);
+                transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+
+            /*  Hover Animations Mapping */
+            .timeline-quest-card:hover .quest-circle-portal {
+                transform: translateY(-12px) rotateX(10deg) scale(1.06);
+                box-shadow: 0 20px 40px rgba(217, 119, 6, 0.3);
+            }
+            .timeline-quest-card:hover .quest-circle-portal::after {
+                border-color: #D97706;
+                transform: scale(1.05);
+            }
+            .timeline-quest-card:hover .quest-circle-portal img {
+                transform: scale(1.15) rotate(2deg);
+            }
+            .timeline-quest-card:hover .parallax-badge-layer {
+                background: #4A3728 !important;
+                color: #FFD78A !important;
+                box-shadow: 0 10px 20px rgba(74, 55, 40, 0.25);
+                transform: translateZ(50px) scale(1.05);
+            }
+
+            /* Micro-scroller config for fallback preview box styling */
+            .custom-timeline-scroll::-webkit-scrollbar {
+                width: 4px;
+            }
+            .custom-timeline-scroll::-webkit-scrollbar-thumb {
+                background: rgba(217, 119, 6, 0.3);
+                border-radius: 99px;
+            }
+        </style>
+
+        <!-- Item 1: Bago ang 1949 -->
+        <div class="timeline-quest-card w-full lg:w-1/5 flex flex-col items-center text-center cursor-pointer group" onclick="hapticClickTrigger(this, 'item1')">
+            <div class="quest-circle-portal mb-5">
+                <img src="1ST_timeline.png" alt="Lumang Bayan ng Padre Garcia" class="w-full h-full object-cover transition-transform duration-700 ease-out">
+            </div>
+            <div id="label1" class="parallax-badge-layer font-bold bg-[#D97706] text-white px-4 py-1.5 rounded-full text-xs uppercase tracking-wider shadow-sm select-none" style="font-family: 'Poppins', sans-serif;">
+                Bago ang 1949
+            </div>
+            <div id="details1" class="custom-timeline-scroll mt-4 text-xs md:text-sm text-left bg-white/80 backdrop-blur-sm p-4 rounded-2xl border border-stone-200/60 hidden shadow-md max-h-[150px] overflow-y-auto text-stone-600 font-medium leading-relaxed">
+                Bago naging isang hiwalay na bayan, ang Padre Garcia ay kilala bilang Lumang Bayan o Sambat at kabilang pa sa nasasakupan ng Rosario, Batangas.
+            </div>
+        </div>
+
+        <!-- Item 2: Oktubre 11, 1949 -->
+        <div class="timeline-quest-card w-full lg:w-1/5 flex flex-col items-center text-center cursor-pointer group" onclick="hapticClickTrigger(this, 'item2')">
+            <div class="quest-circle-portal mb-5">
+                <img src="2NDTIMELINE.png" alt="Elpidio Quirino" class="w-full h-full object-cover transition-transform duration-700 ease-out">
+            </div>
+            <div id="label2" class="parallax-badge-layer font-bold bg-[#D97706] text-white px-4 py-1.5 rounded-full text-xs uppercase tracking-wider shadow-sm select-none" style="font-family: 'Poppins', sans-serif;">
+                Oktubre 11, 1949
+            </div>
+            <div id="details2" class="custom-timeline-scroll mt-4 text-xs md:text-sm text-left bg-white/80 backdrop-blur-sm p-4 rounded-2xl border border-stone-200/60 hidden shadow-md max-h-[150px] overflow-y-auto text-stone-600 font-medium leading-relaxed">
+                Sa bisa ng Executive Order No. 279 na nilagdaan ni Pangulong Elpidio Quirino, itinatag ang Padre Garcia bilang isang malayang munisipalidad mula sa ilang baryo ng Rosario.
+            </div>
+        </div>
+
+        <!-- Item 3: Disyembre 1, 1949 -->
+        <div class="timeline-quest-card w-full lg:w-1/5 flex flex-col items-center text-center cursor-pointer group" onclick="hapticClickTrigger(this, 'item3')">
+            <div class="quest-circle-portal mb-5">
+                <img src="3.png" alt="Monumento ng Padre Garcia" class="w-full h-full object-cover transition-transform duration-700 ease-out">
+            </div>
+            <div id="label3" class="parallax-badge-layer font-bold bg-[#D97706] text-white px-4 py-1.5 rounded-full text-xs uppercase tracking-wider shadow-sm select-none" style="font-family: 'Poppins', sans-serif;">
+                Disyembre 1, 1949
+            </div>
+            <div id="details3" class="custom-timeline-scroll mt-4 text-xs md:text-sm text-left bg-white/80 backdrop-blur-sm p-4 rounded-2xl border border-stone-200/60 hidden shadow-md max-h-[150px] overflow-y-auto text-stone-600 font-medium leading-relaxed">
+                Naging ganap na epektibo ang pagkakatatag ng Padre Garcia bilang isang hiwalay at nagsasariling bayan.
+            </div>
+        </div>
+
+        <!-- Item 4: 1952 -->
+        <div class="timeline-quest-card w-full lg:w-1/5 flex flex-col items-center text-center cursor-pointer group" onclick="hapticClickTrigger(this, 'item4')">
+            <div class="quest-circle-portal mb-5">
+                <img src="4_pic.png" alt="Palengke ng Baka" class="w-full h-full object-cover transition-transform duration-700 ease-out">
+            </div>
+            <div id="label4" class="parallax-badge-layer font-bold bg-[#D97706] text-white px-4 py-1.5 rounded-full text-xs uppercase tracking-wider shadow-sm select-none" style="font-family: 'Poppins', sans-serif;">
+                1952
+            </div>
+            <div id="details4" class="custom-timeline-scroll mt-4 text-xs md:text-sm text-left bg-white/80 backdrop-blur-sm p-4 rounded-2xl border border-stone-200/60 hidden shadow-md max-h-[150px] overflow-y-auto text-stone-600 font-medium leading-relaxed">
+                Itinatag ng Sanggunian Bayan ang cattle market o bakahan. Sa paglipas ng panahon, ito ang naging pangunahing pinagkukunan ng yaman sa Southern Tagalog at nagbigay sa Padre Garcia ng bansag na "Cattle Trading Capital of the Philippines."
+            </div>
+        </div>
+
+        <!-- Item 5: Kasalukuyan -->
+        <div class="timeline-quest-card w-full lg:w-1/5 flex flex-col items-center text-center cursor-pointer group" onclick="hapticClickTrigger(this, 'item5')">
+            <div class="quest-circle-portal mb-5">
+                <img src="kasalukuyan.png" alt="Kasalukuyan" class="w-full h-full object-cover transition-transform duration-700 ease-out">
+            </div>
+            <div id="label5" class="parallax-badge-layer font-bold bg-[#D97706] text-white px-4 py-1.5 rounded-full text-xs uppercase tracking-wider shadow-sm select-none" style="font-family: 'Poppins', sans-serif;">
+                Kasalukuyan
+            </div>
+            <div id="details5" class="custom-timeline-scroll mt-4 text-xs md:text-sm text-left bg-white/80 backdrop-blur-sm p-4 rounded-2xl border border-stone-200/60 hidden shadow-md max-h-[150px] overflow-y-auto text-stone-600 font-medium leading-relaxed">
+                Sa kasalukuyan, kilala ang Padre Garcia sa agrikultura, pag-aalaga ng baka, at cattle trading. Patuloy nitong pinaunlad ang ekonomiya habang pinangangalagaan ang kasaysayan, kultura, at tradisyon ng bayan.
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ========================================================
+         java skrep
+
+         ======================================================== -->
+    <script>
+        function hapticClickTrigger(cardElement, itemID) {
+            // High-End Micro Interaction: Bibigyan ng spring-load bounce bago sumabog ang modal open function
+            cardElement.style.transform = "scale(0.92) rotateY(-8deg)";
+            
+            setTimeout(() => {
+                cardElement.style.transform = ""; // Instant recovery response
+                if (typeof window.showDetails === 'function') {
+                    window.showDetails(itemID);
+                }
+            }, 140);
+        }
+    </script>
+
+
+   <!-- Culture Section -->
+<!-- Culture Section with Next-Gen Interactive Aura Engine -->
+<section id="culture" class="py-24 px-4 relative overflow-hidden bg-transparent" id="interactive-culture-field">
+    
+    <!-- ADVANCED 3D GRAPHICS MODULE: Dynamic Mouse-Tracking Plasma Matrix (Wow-Factor Backdrop) -->
+    <div id="magnetic-glow-core" 
+         class="absolute rounded-full bg-gradient-to-tr from-[#D97706]/15 via-[#FFD78A]/5 to-transparent blur-[110px] pointer-events-none z-0 transition-all duration-700 ease-out"
+         style="top: 30%; left: 40%; width: 550px; height: 350px; transform: translate(-50%, -50%);"></div>
+
+    <div class="container mx-auto relative z-10">
+        <!-- Upgraded Master-Class Cinematic Header Track Layout -->
+        <div class="text-center mb-20 select-none group/header" style="perspective: 1000px; transform-style: preserve-3d;">
+            
+            <!-- Floating Animated Game Status Shield -->
+            <span class="inline-flex items-center space-x-2 text-xs font-black uppercase tracking-[0.45em] text-[#D97706] mb-4 bg-amber-500/5 px-4 py-1.5 rounded-full border border-amber-600/10 shadow-[0_4px_12px_rgba(217,119,6,0.03)] transition-transform duration-500 group-hover/header:translate-z-10 group-hover/header:scale-105" 
+                  style="font-family: 'Poppins', sans-serif;">
+                <span class="w-1.5 h-1.5 bg-amber-500 rounded-full animate-ping"></span>
+                <span>✨ Mga Yaman ng Lahi</span>
+            </span>
+            
+            <!-- Grand 3D Kinetic Title -->
+            <h2 class="text-4xl md:text-6xl font-black text-[#4A3728] tracking-tight mb-4 drop-shadow-sm uppercase transition-transform duration-500 group-hover/header:translate-z-6" 
+                style="font-family: 'Cinzel', serif;">
+                Kultura at mga Nakagawian
+            </h2>
+            
+            <!-- Advanced Kinetic Sonar Rule Accent (Continuous pulsing wave line) -->
+            <div class="relative w-28 h-[3px] mx-auto mb-5 overflow-hidden rounded-full bg-stone-200">
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-[#D97706] to-transparent w-full animate-[sonarWave_2s_infinite_linear]"></div>
+            </div>
+
+            <!-- Dynamic Descriptive Task Cue Subtext Layer -->
+            <p class="text-xs md:text-sm text-stone-500 max-w-sm mx-auto font-bold uppercase tracking-widest leading-relaxed transition-all duration-500 group-hover/header:translate-z-4 group-hover/header:text-stone-700" 
+               style="font-family: 'Poppins', sans-serif;">
+                💡 <span class="text-[#D97706] relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[1px] after:bg-amber-500/50 after:scale-x-0 group-hover/header:after:scale-x-100 after:transition-transform after:duration-500">Pumili ng kabanata</span> upang silipin ang aming mga natatanging pamana at tradisyon.
+            </p>
+        </div>
+
+        <!-- Custom Advanced Special Effects Matrix Script Config -->
+        <style>
+            @keyframes sonarWave {
+                0% { transform: translateX(-100%); }
+                100% { transform: translateX(100%); }
+            }
+        </style>
+
+        <!-- ========================================================
+             MATHEMATICAL DISPLACEMENT MATRIX (JAVASCRIPT)
+             ======================================================== -->
+        <script>
+            // Advanced Physics Mouse Tracker Overlay Engine
+            document.addEventListener('mousemove', (e) => {
+                const matrixField = document.getElementById('culture');
+                const plasmaCore = document.getElementById('magnetic-glow-core');
+                
+                if (matrixField && plasmaCore) {
+                    // Collect exact geometric coordinates of active zone bounding boxes
+                    const bounds = matrixField.getBoundingClientRect();
+                    
+                    // Track position relative to container scope
+                    const xPosition = e.clientX - bounds.left;
+                    const yPosition = e.clientY - bounds.top;
+                    
+                    // Displace plasma energy blob center with fluid structural tracking physics
+                    plasmaCore.style.left = `${xPosition}px`;
+                    plasmaCore.style.top = `${yPosition}px`;
+                }
+            });
+        </script>
+
+
+        <!-- Custom CSS Layer para sa Bouncy Cards & Image Overlay Transitions -->
+        <style>
+            .culture-quest-card {
+                background: rgba(255, 255, 255, 0.4);
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+                border: 1px solid rgba(74, 55, 40, 0.08);
+                transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            }
+            .culture-quest-card:hover {
+                transform: translateY(-10px) scale(1.02);
+                background: rgba(255, 255, 255, 0.85);
+                border-color: rgba(217, 119, 6, 0.25);
+                box-shadow: 0 20px 40px rgba(74, 55, 40, 0.12);
+            }
+            .culture-img-container::after {
+                content: '';
+                position: absolute;
+                inset: 0;
+                background: linear-gradient(to top, rgba(74, 55, 40, 0.4), transparent);
+                opacity: 0.6;
+                transition: opacity 0.4s ease;
+            }
+            .culture-quest-card:hover .culture-img-container::after {
+                background: linear-gradient(to top, rgba(217, 119, 6, 0.3), transparent);
+                opacity: 0.8;
+            }
+        </style>
+
+        <!-- The Cultural Codex Grid Container -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto" style="font-family: 'Poppins', sans-serif;">
+            
+            <!-- Card 1: Pananampalataya -->
+            <div class="culture-quest-card rounded-3xl overflow-hidden cursor-pointer group p-3 flex flex-col justify-between" onclick="openTradition('religious')">
+                <div>
+                    <div class="culture-img-container relative w-full h-52 rounded-2xl overflow-hidden shadow-inner bg-stone-100">
+                        <img src="pananampalataya.png" alt="Pananampalataya" class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110">
+                        <span class="absolute top-3 left-3 bg-[#4A3728] text-[#FFD78A] text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-md z-10 shadow-md">
+                            ⛪ Paniniwala
+                        </span>
+                    </div>
+                    <div class="p-4 pt-5">
+                        <h3 class="text-xl font-bold text-[#4A3728] tracking-tight group-hover:text-[#D97706] transition-colors duration-300">
+                            Matibay na Pananampalataya
+                        </h3>
+                        <p class="text-stone-500 text-sm mt-2 leading-relaxed font-medium">
+                            Mga tradisyong may kinalaman sa debosyon, pananalig, at mga ritwal na maingat na ipinasa mula sa mga ninuno.
+                        </p>
+                    </div>
+                </div>
+                <div class="p-4 pt-0 flex justify-end items-center">
+                    <span class="text-xs font-bold text-stone-400 group-hover:text-[#D97706] group-hover:translate-x-1 transition-all duration-300 flex items-center space-x-1">
+                        <span>Buksan ang Tala</span>
+                        <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Card 2: Pasasalamat sa Ani -->
+            <div class="culture-quest-card rounded-3xl overflow-hidden cursor-pointer group p-3 flex flex-col justify-between" onclick="openTradition('harvest')">
+                <div>
+                    <div class="culture-img-container relative w-full h-52 rounded-2xl overflow-hidden shadow-inner bg-stone-100">
+                        <img src="payong.png" alt="Pasasalamat" class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110">
+                        <span class="absolute top-3 left-3 bg-[#4A3728] text-[#FFD78A] text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-md z-10 shadow-md">
+                            🌾 Pasasalamat
+                        </span>
+                    </div>
+                    <div class="p-4 pt-5">
+                        <h3 class="text-xl font-bold text-[#4A3728] tracking-tight group-hover:text-[#D97706] transition-colors duration-300">
+                            Pasasalamat sa Ani
+                        </h3>
+                        <p class="text-stone-500 text-sm mt-2 leading-relaxed font-medium">
+                            Pagpapahayag ng taos-pusong pasasalamat sa kalikasan para sa masaganang ani, masiglang livestock, at matatag na kabuhayan.
+                        </p>
+                    </div>
+                </div>
+                <div class="p-4 pt-0 flex justify-end items-center">
+                    <span class="text-xs font-bold text-stone-400 group-hover:text-[#D97706] group-hover:translate-x-1 transition-all duration-300 flex items-center space-x-1">
+                        <span>Buksan ang Tala</span>
+                        <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Card 3: Mga Kaugalian ng Pamayanan -->
+            <div class="culture-quest-card rounded-3xl overflow-hidden cursor-pointer group p-3 flex flex-col justify-between" onclick="openTradition('social')">
+                <div>
+                    <div class="culture-img-container relative w-full h-52 rounded-2xl overflow-hidden shadow-inner bg-stone-100">
+                        <img src="pagsamasama.png" alt="Pagsasama-sama" class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110">
+                        <span class="absolute top-3 left-3 bg-[#4A3728] text-[#FFD78A] text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-md z-10 shadow-md">
+                            🤝 Bayanihan
+                        </span>
+                    </div>
+                    <div class="p-4 pt-5">
+                        <h3 class="text-xl font-bold text-[#4A3728] tracking-tight group-hover:text-[#D97706] transition-colors duration-300">
+                            Mga Kaugalian ng Pamayanan
+                        </h3>
+                        <p class="text-stone-500 text-sm mt-2 leading-relaxed font-medium">
+                            Ang diwa ng pagdadamayan sa mga kasalan, masasayang pista, at kusang-loob na pagtutulungan sa buong komunidad.
+                        </p>
+                    </div>
+                </div>
+                <div class="p-4 pt-0 flex justify-end items-center">
+                    <span class="text-xs font-bold text-stone-400 group-hover:text-[#D97706] group-hover:translate-x-1 transition-all duration-300 flex items-center space-x-1">
+                        <span>Buksan ang Tala</span>
+                        <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                    </span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- ========================================================
+     JAVASCRIPT INTEGRATION: Para ma-update ang Larawan sa Modal
+     ======================================================== -->
+<script>
+    // Ino-override o dinadagdagan natin ang dati mong function para mag-inject ng image sa split modal
+    const originalOpenTradition = window.openTradition;
+    
+    window.openTradition = function(type) {
+        const modalImage = document.getElementById('modal-image');
+        
+        if (modalImage) {
+            if (type === 'religious') {
+                modalImage.src = "pananampalataya.jpg";
+            } else if (type === 'harvest') {
+                modalImage.src = "pasasalamat.jpg";
+            } else if (type === 'social') {
+                modalImage.src = "pagsasama.jpg";
+            }
+        }
+        
+        // Tumutuloy sa dati mong logic (para magbukas ang text at title)
+        if (typeof originalOpenTradition === 'function') {
+            originalOpenTradition(type);
+        }
+    };
+</script>
+
+
+   <!-- Festivals Section -->
+<section id="festivals" class="py-20 px-4 relative overflow-hidden bg-transparent">
+    <div class="container mx-auto relative z-10">
+        
+        <!-- Playful Carnival-Style Header -->
+        <div class="text-center mb-16">
+            <span class="text-xs font-black uppercase tracking-[0.4em] text-[#D97706] block mb-3" style="font-family: 'Poppins', sans-serif;">
+                🎉 maki-isa sa saya
+            </span>
+            <h2 class="text-3xl md:text-5xl font-black text-[#4A3728] tracking-tight mb-4 uppercase drop-shadow-sm" style="font-family: 'Cinzel', serif;">
+                Mga Pagdiriwang at Pista
+            </h2>
+            <div class="w-20 h-[3px] bg-gradient-to-r from-transparent via-[#D97706] to-transparent mx-auto mb-4"></div>
+            <p class="text-sm text-stone-500 max-w-sm mx-auto font-medium" style="font-family: 'Poppins', sans-serif;">
+                🎟️ <span class="text-[#D97706]">Pindutin ang Ticket</span> upang makuha ang iyong pass at silipin ang selebrasyon!
+            </p>
+        </div>
+
+        <!-- Custom Advanced CSS Engine para sa Magic Ticket Design -->
+        <style>
+            /* The Interactive Ticket Chassis */
+            .festival-magic-ticket {
+                background: #fbf9f4;
+                border: 2px dashed rgba(74, 55, 40, 0.25);
+                position: relative;
+                transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            }
+
+            /* Realistic Ticket Side Cutouts / Notches (Uka sa gilid) */
+            .festival-magic-ticket::before, .festival-magic-ticket::after {
+                content: '';
+                position: absolute;
+                top: 50%;
+                width: 24px;
+                height: 24px;
+                background: #fbf9f4; /* Tumutugma sa kulay ng iyong background pattern */
+                border-radius: 50%;
+                transform: translateY(-50%);
+                z-index: 10;
+                transition: all 0.4s ease;
+            }
+            .festival-magic-ticket::before { left: -14px; border-right: 2px dashed rgba(74, 55, 40, 0.25); }
+            .festival-magic-ticket::after { right: -14px; border-left: 2px dashed rgba(74, 55, 40, 0.25); }
+
+            /* Hover Ticket Transformation */
+            .festival-magic-ticket:hover {
+                transform: translateY(-8px) scale(1.02) rotate(1deg);
+                border-color: #D97706;
+                background: #fff;
+                box-shadow: 0 20px 40px rgba(217, 119, 6, 0.15);
+            }
+            
+            /* */
+            .festival-magic-ticket.ticket-reverse:hover {
+                transform: translateY(-8px) scale(1.02) rotate(-1deg);
+            }
+
+            .festival-magic-ticket:hover::before, .festival-magic-ticket:hover::after {
+                border-color: #D97706;
+            }
+
+            /* Click Compress Animation */
+            .festival-magic-ticket:active {
+                transform: scale(0.96) rotate(0deg);
+                transition: transform 0.1s ease;
+            }
+        </style>
+
+        <!-- The Ticket Counter Grid Container -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-10 max-w-4xl mx-auto" style="font-family: 'Poppins', sans-serif;">
+            
+            <!-- TICKET 1:  -->
+            <div class="festival-magic-ticket rounded-2xl p-6 md:p-8 flex flex-col justify-between cursor-pointer group" 
+     onclick="openFestival('kutang-bato')">
+    <div>
+        <!-- Ticket Header Stub -->
+        <div class="flex justify-between items-center mb-6 border-b-2 border-stone-200 border-dotted pb-4">
+            <span class="text-[10px] font-black tracking-widest text-[#D97706] uppercase bg-amber-50 px-2.5 py-1 rounded">
+                ✨ FORTRESS ADMIT ONE
+            </span>
+            <span class="text-xs font-mono text-stone-400 group-hover:text-amber-600 transition-colors"><div id="PG-KUTA"></div></span>
+        </div>
+        
+        <!-- Main Content -->
+        <h3 class="text-2xl font-black text-[#4A3728] tracking-tight mb-3 group-hover:text-[#D97706] transition-colors duration-300">
+            Moog ng Lumang Simbahan
+        </h3>
+        <p class="text-stone-500 text-sm leading-relaxed font-medium">
+            Lihim sa marami na ang dambuhalang pader ng lumang simbahan ay itinayo noong ika-18 siglo bilang isang matatag na kuta laban sa madugong salakay ng mga pirata! Ang taunang pista ng bayan ay hindi lamang simpleng kasiyahan, kundi nag-ugat sa makasaysayang pagdiriwang ng tagumpay at kaligtasan ng ating mga ninuno mula sa digmaan.
+        </p>
+    </div>
+
+    <!-- Ticket Footer Stub / Tear-off Line -->
+    <div class="mt-8 pt-4 border-t border-stone-200 flex justify-between items-center">
+        <!-- Fake Barcode Representation for Gaming look -->
+        <div class="flex space-x-0.5 opacity-40 group-hover:opacity-80 transition-opacity">
+            <div class="w-1 h-6 bg-stone-900"></div><div class="w-0.5 h-6 bg-stone-900"></div><div class="w-2 h-6 bg-stone-900"></div><div class="w-0.5 h-6 bg-stone-900"></div><div class="w-1 h-6 bg-stone-900"></div>
+        </div>
+        <span class="text-xs font-bold text-stone-400 group-hover:text-[#D97706] transition-colors flex items-center space-x-1">
+            <span>Claim Pass</span>
+            <i class="fa-solid fa-ticket text-xs ml-1 transition-transform group-hover:rotate-12"></i>
+        </span>
+    </div>
+</div>
+
+            <!-- TICKET 2: Kabakahan Festival -->
+            <div class="festival-magic-ticket ticket-reverse rounded-2xl p-6 md:p-8 flex flex-col justify-between cursor-pointer group" 
+                 onclick="openFestival('townfiesta')">
+                <div>
+                    <!-- Ticket Header Stub -->
+                    <div class="flex justify-between items-center mb-6 border-b-2 border-stone-200 border-dotted pb-4">
+                        <span class="text-[10px] font-black tracking-widest text-[#D97706] uppercase bg-amber-50 px-2.5 py-1 rounded">
+                            🙏 HERITAGE ADMIT ONE
+                        </span>
+                        <span class="text-xs font-mono text-stone-400 group-hover:text-amber-600 transition-colors">
+                        </span>
+                    </div>
+                    
+                    <!-- Main Content -->
+                    <h3 class="text-2xl font-black text-[#4A3728] tracking-tight mb-3 group-hover:text-[#D97706] transition-colors duration-300">
+                        Rodeo Ala Garciano (Rodeo Festival)
+                    </h3>
+                    <p class="text-stone-500 text-sm leading-relaxed font-medium">
+                       Isang kapanapanabik na paligsahan kung saan ipinapakita ng mga lokal na bakero ang kanilang galing sa paghawak ng mga baka. Sinasalamin nito ang tapang at husay ng mga Garciano bilang "Cattle Trading Capital of the Philippines
+                    </p>
+                </div>
+
+                <!-- Ticket Footer Stub / Tear-off Line -->
+                <div class="mt-8 pt-4 border-t border-stone-200 flex justify-between items-center">
+                    <div class="flex space-x-0.5 opacity-40 group-hover:opacity-80 transition-opacity">
+                        <div class="w-0.5 h-6 bg-stone-900"></div><div class="w-2 h-6 bg-stone-900"></div><div class="w-1 h-6 bg-stone-900"></div><div class="w-0.5 h-6 bg-stone-900"></div><div class="w-1 h-6 bg-stone-900"></div>
+                    </div>
+                    <span class="text-xs font-bold text-stone-400 group-hover:text-[#D97706] transition-colors flex items-center space-x-1">
+                        <span>Claim Pass</span>
+                        <i class="fa-solid fa-ticket text-xs ml-1 transition-transform group-hover:rotate-12"></i>
+                    </span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+    <!-- Cattle Industry Section -->
+   <!-- Cattle Industry Section -->
+<section id="cattle" class="py-16 px-4 bg-transparent relative z-10">
+    <div class="container mx-auto">
+        <!-- Upgraded Section Title -->
+        <div class="text-center mb-10">
+            <span class="text-xs font-black uppercase tracking-[0.4em] text-[#D97706] block mb-2" style="font-family: 'Poppins', sans-serif;">
+                🐂 SENTRO NG KALAKALAN
+            </span>
+            <h2 class="text-3xl md:text-4xl font-black text-[#4A3728] tracking-tight uppercase" style="font-family: 'Cinzel', serif;">
+                Ang Industriya ng Baka
+            </h2>
+            <div class="w-16 h-[2.5px] bg-gradient-to-r from-transparent via-[#D97706] to-transparent mx-auto mt-3"></div>
+        </div>
+
+        <!-- Custom Advanced Transition Engine -->
+        <style>
+            /* Smooth Cinematic Card Wrapper */
+            .maangas-showroom-card {
+                background: rgba(255, 255, 255, 0.4);
+                backdrop-filter: blur(16px);
+                -webkit-backdrop-filter: blur(16px);
+                border: 1px solid rgba(255, 255, 255, 0.5);
+                transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+            .maangas-showroom-card:hover {
+                transform: translateY(-8px);
+                background: rgba(255, 255, 255, 0.9);
+                border-color: rgba(217, 119, 6, 0.3);
+                box-shadow: 0 30px 60px rgba(74, 55, 40, 0.15);
+            }
+
+            /* Image Container Shimmer Frame */
+            .kinetic-img-frame {
+                position: relative;
+                overflow: hidden;
+                border-radius: 20px;
+                border: 1px solid rgba(74, 55, 40, 0.1);
+                transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.6s ease;
+            }
+            .maangas-showroom-card:hover .kinetic-img-frame {
+                transform: scale(1.03) rotate(-1deg);
+                box-shadow: 0 15px 35px rgba(217, 119, 6, 0.2);
+            }
+            .kinetic-img-frame img {
+                transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+            .maangas-showroom-card:hover .kinetic-img-frame img {
+                transform: scale(1.1);
+            }
+
+            /* Sleek Bullet Points Hover Animation */
+            .maangas-list-item {
+                transition: all 0.3s ease;
+                transform: translateX(0);
+            }
+            .maangas-list-item:hover {
+                transform: translateX(8px);
+                color: #D97706 !important;
+            }
+
+            /* Custom Premium Metallic Button */
+            .btn-amber-glow {
+                background: linear-gradient(135deg, #D97706 0%, #B45309 100%);
+                position: relative;
+                overflow: hidden;
+                transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+            .btn-amber-glow::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+                transition: all 0.5s ease;
+            }
+            .btn-amber-glow:hover::before {
+                left: 100%;
+            }
+            .btn-amber-glow:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 10px 25px rgba(217, 119, 6, 0.4);
+                letter-spacing: 0.5px;
+            }
+        </style>
+
+        <!-- Main Master Showroom Chassis -->
+     <!-- Isama ito para sa mga Custom Cinematic Animations -->
+<style>
+    @keyframes float {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-8px) rotate(1deg); }
+    }
+    @keyframes pulseGlow {
+        0%, 100% { opacity: 0.3; transform: scale(1); }
+        50% { opacity: 0.6; transform: scale(1.02); }
+    }
+    @keyframes shine {
+        100% { left: 125%; }
+    }
+    .animate-float { animation: float 6s ease-in-out infinite; }
+    .animate-glow { animation: pulseGlow 4s ease-in-out infinite; }
+    .hover-shine::after {
+        content: '';
+        position: absolute;
+        top: 0; left: -75%; width: 50%; height: 100%;
+        background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 100%);
+        transform: skewX(-25deg);
+        transition: 0.75s;
+    }
+    .hover-shine:hover::after { animation: shine 0.75s forwards; }
+</style>
+
+<!-- MAIN CARD: May Dynamic Border Glow at Hover Expansion -->
+<div class="max-w-4xl mx-auto relative group" style="font-family: 'Poppins', sans-serif;">
+    
+    <!-- BACKGROUND GLOW: Lumilitaw at nag-p-pulse kapag ni-hover ang card -->
+    <div class="absolute -inset-1 bg-gradient-to-r from-[#D97706] to-[#4A3728] rounded-[2.5rem] blur-xl opacity-20 group-hover:opacity-60 transition duration-700 group-hover:duration-200 animate-glow"></div>
+    
+    <!-- ANG CARD CONTAINER -->
+    <div class="relative bg-white/90 backdrop-blur-xl border border-stone-200/40 p-6 md:p-10 rounded-[2.5rem] shadow-2xl transition-all duration-500 ease-out transform group-hover:-translate-y-2 overflow-hidden">
+        
+        <div class="flex flex-col md:flex-row gap-10 items-center">
+            
+            <!-- KALIWA:pic onlyy -->
+            <div class="w-full md:w-1/2 flex-shrink-0 relative overflow-hidden rounded-[1.8rem] shadow-xl group-hover:shadow-[0_25px_50px_rgba(74,55,40,0.25)] transition-all duration-500 hover-shine animate-float">
+                <div class="w-full aspect-[4/3] bg-stone-100 relative overflow-hidden group/img">
+                    
+                    <!-- Image Zoom & effect -->
+                    <img src="kabakahanfesti.png" alt="Palengke ng Baka" class="w-full h-full object-cover transition-all duration-700 ease-out group-hover/img:scale-115 group-hover/img:rotate-2">
+                    
+                    <!-- F -->
+                    <div class="absolute inset-0 bg-gradient-to-t from-[#4A3728]/80 via-[#D97706]/10 to-transparent opacity-40 group-hover/img:opacity-80 transition-opacity duration-500"></div>
+                    
+                    <!-- Floating Badge na May Pabalik-balik na Kilusan -->
+                    <span class="absolute bottom-5 left-5 bg-[#4A3728]/95 backdrop-blur-md text-[#FFD78A] text-[10px] font-black uppercase tracking-[0.3em] px-4 py-2.5 rounded-xl z-10 shadow-[0_10px_20px_rgba(0,0,0,0.3)] border border-white/20 transform transition-all duration-500 group-hover/img:translate-x-2 group-hover/img:-translate-y-1">
+                        ⭐ Trading Capital Hub
+                    </span>
+                </div>
+            </div>
+            
+            <!-- KANAN:Interactive  -->
+            <div class="w-full md:w-1/2">
+                
+                <!-- Micro-Tag na May Pop-out Animation -->
+                <span class="inline-flex items-center text-[10px] font-black text-[#D97706] tracking-[0.25em] uppercase mb-3 bg-[#D97706]/10 px-4 py-1.5 rounded-full border border-[#D97706]/20 shadow-sm transform group-hover:scale-105 transition-all duration-300">
+                    <span class="w-2 h-2 rounded-full bg-[#D97706] inline-block mr-2 animate-ping"></span>
+                    Kultura at Tradisyon
+                </span>
+                
+               <!-- Main Dynamic Heading -->
+<h3 class="text-3xl md:text-5xl font-black text-[#4A3728] tracking-tight mb-6 leading-[1.15] bg-gradient-to-r from-[#4A3728] via-[#6b4e36] to-[#D97706] bg-[length:200%_auto] bg-clip-text text-transparent group-hover:bg-right transition-all duration-700 select-none">
+    Puso ng Kabuhayan ng Bayan
+</h3>
+
+<!-- Rich-Text Content -->
+<p class="text-stone-600 text-sm md:text-base leading-relaxed mb-8 font-medium max-w-xl">
+    Ang <strong class="relative inline-block text-[#4A3728] font-black tracking-wide border-b-2 border-[#D97706]/30 pb-0.5 transition-all duration-300 hover:border-[#D97706]">Padre Garcia</strong> ay kinikilala bilang 
+    <strong class="relative inline-block text-[#D97706] font-extrabold px-1">"Sentro ng Kalakalan ng Baka sa Katimugang Tagalog"</strong>. 
+    Sa loob ng mahigit <span class="inline-block bg-gradient-to-br from-[#FFD78A] to-[#fcd34d] text-[#4A3728] px-2.5 py-0.5 rounded-lg font-black shadow-sm transform -rotate-1">70 taon</span>, ang industriyang ito ang naging pangunahing pinagkukunan ng kabuhayan.
+</p>
+
+<!-- Ultra-Premium Interactive List with Click-to-Expand Pop-out Panels -->
+<ul class="space-y-4 border-t border-stone-200/80 pt-6 text-xs md:text-sm font-bold text-stone-600">
+    
+    <!-- LIST 1: Kabuhayan -->
+    <li class="relative overflow-hidden rounded-2xl border border-transparent transition-all duration-500 hover:bg-white hover:border-stone-200/60 hover:shadow-[0_12px_30px_rgba(74,55,40,0.06)] group/item">
+        <!-- Hidden Toggler for JS-Free Click Interactivity -->
+        <input type="checkbox" id="toggle-list-1" class="peer hidden" />
+        
+        <!-- Main Label/Header of Item -->
+        <label for="toggle-list-1" class="flex items-center cursor-pointer p-3.5 select-none w-full">
+            <div class="flex-shrink-0 w-10 h-10 bg-[#D97706]/10 rounded-xl flex items-center justify-center mr-4 transition-all duration-500 border border-[#D97706]/10 peer-checked:bg-[#D97706] peer-checked:rotate-[360deg] group-hover/item:bg-[#D97706] group-hover/item:text-white group-hover/item:rotate-[180deg]">
+                <i class="fa-solid fa-cow text-[#D97706] text-sm transition-all duration-500 group-hover/item:text-white peer-checked:text-white"></i>
+            </div>
+            <span class="transition-colors duration-300 text-stone-700 font-semibold tracking-wide flex-1 group-hover/item:text-[#4A3728]">
+                Pinagkukunan ng Marangal na Kabuhayan ng Libo-libong Pamilya
+            </span>
+            <!-- Caret Icon Indicator -->
+            <i class="fa-solid fa-chevron-down text-stone-400 text-xs transition-transform duration-500 mr-2 peer-checked:rotate-180 group-hover/item:translate-y-0.5"></i>
+        </label>
+
+        <!-- Hidden Pop-out Panel (Appears smoothly on click) -->
+        <div class="max-h-0 opacity-0 overflow-hidden transition-all duration-500 ease-in-out bg-stone-50/80 border-t border-transparent px-5 py-0 peer-checked:max-h-40 peer-checked:opacity-100 peer-checked:py-4 peer-checked:border-stone-200/60">
+            <p class="text-stone-500 font-medium text-xs md:text-sm leading-relaxed">
+Ang pag-aalaga at pagbebenta ng baka ay malaking tulong sa maraming pamilya sa Garcia. Dahil sa negosyong ito, nakakapag-ipon ang mga tao at nabibigyan ng magandang buhay ang kanilang pamilya. Kaya naman mas umuunlad at sumisigla rin ang ekonomiya ng buong komunidad.            </p>
+        </div>
+    </li>
+    
+    <!-- LIST 2: Ugnayan -->
+    <li class="relative overflow-hidden rounded-2xl border border-transparent transition-all duration-500 hover:bg-white hover:border-stone-200/60 hover:shadow-[0_12px_30px_rgba(74,55,40,0.06)] group/item">
+        <input type="checkbox" id="toggle-list-2" class="peer hidden" />
+        
+        <label for="toggle-list-2" class="flex items-center cursor-pointer p-3.5 select-none w-full">
+            <div class="flex-shrink-0 w-10 h-10 bg-[#D97706]/10 rounded-xl flex items-center justify-center mr-4 transition-all duration-500 border border-[#D97706]/10 group-hover/item:bg-[#D97706] group-hover/item:rotate-[180deg]">
+                <i class="fa-solid fa-handshake text-[#D97706] text-xs transition-all duration-500 group-hover/item:text-white"></i>
+            </div>
+            <span class="transition-colors duration-300 text-stone-700 font-semibold tracking-wide flex-1 group-hover/item:text-[#4A3728]">
+                Matibay na Nag-uugnay sa mga Magsasaka at Mangangalakal
+            </span>
+            <i class="fa-solid fa-chevron-down text-stone-400 text-xs transition-transform duration-500 mr-2"></i>
+        </label>
+
+        <div class="max-h-0 opacity-0 overflow-hidden transition-all duration-500 ease-in-out bg-stone-50/80 border-t border-transparent px-5 py-0 peer-checked:max-h-40 peer-checked:opacity-100 peer-checked:py-4 peer-checked:border-stone-200/60">
+            <p class="text-stone-500 font-medium text-xs md:text-sm leading-relaxed">
+Ang negosyo ng baka ay nag-uugnay sa mga magsasaka, tagapag-alaga, at mga mangangalakal sa Garcia. Sa kanilang pagtutulungan, mas nagiging matagumpay ang bentahan at mas maraming nabibigyan ng pagkakataong kumita. Ipinapakita nito ang diwa ng bayanihan at kooperasyon na ipinagmamalaki ng komunidad.            </p>
+        </div>
+    </li>
+    
+    <!-- LIST 3: Tradisyon -->
+    <li class="relative overflow-hidden rounded-2xl border border-transparent transition-all duration-500 hover:bg-white hover:border-stone-200/60 hover:shadow-[0_12px_30px_rgba(74,55,40,0.06)] group/item">
+        <input type="checkbox" id="toggle-list-3" class="peer hidden" />
+        
+        <label for="toggle-list-3" class="flex items-center cursor-pointer p-3.5 select-none w-full">
+            <div class="flex-shrink-0 w-10 h-10 bg-[#D97706]/10 rounded-xl flex items-center justify-center mr-4 transition-all duration-500 border border-[#D97706]/10 group-hover/item:bg-[#D97706] group-hover/item:rotate-[180deg]">
+                <i class="fa-solid fa-landmark text-[#D97706] text-xs transition-all duration-500 group-hover/item:text-white"></i>
+            </div>
+            <span class="transition-colors duration-300 text-stone-700 font-semibold tracking-wide flex-1 group-hover/item:text-[#4A3728]">
+                Pundasyon ng makasaysayang tradisyon ng buong bayan
+            </span>
+            <i class="fa-solid fa-chevron-down text-stone-400 text-xs transition-transform duration-500 mr-2"></i>
+        </label>
+
+        <div class="max-h-0 opacity-0 overflow-hidden transition-all duration-500 ease-in-out bg-stone-50/80 border-t border-transparent px-5 py-0 peer-checked:max-h-40 peer-checked:opacity-100 peer-checked:py-4 peer-checked:border-stone-200/60">
+            <p Higit pa sa isang trabaho, ang pag-aalaga ng baka ay isang mahalagang tradisyon at bahagi ng kasaysayan ng Padre Garcia. Ito ang dahilan kung bakit tinawag ang bayan bilang “Cattle Trading Capital of the Philippines.” Hanggang ngayon, patuloy na inaalagaan ng mga residente ang tradisyong ito na nagpapakita ng kanilang sipag, pagkakaisa, at pagmamahal sa bayan.class="text-stone-500 font-medium text-xs md:text-sm leading-relaxed">
+                Higit pa sa komersyo, ang "Bakahan" ay sining ng pakikipagtawaran o 'patawaran' na minana pa sa mga ninuno. Ito ang kaluluwa ng taunang kapistahan at nagpapakita ng tatag at sipag ng kulturang Batangueño.
+            </p>
+        </div>
+    </li>
+</ul>
+
+
+                    
+                    <!-- Dynamic Metallic Glowing Button -->
+                    <button onclick="openCattleDetails()" 
+                            class="btn-amber-glow mt-6 text-white px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider shadow-md cursor-pointer group/btn inline-flex items-center space-x-2">
+                        <span>Alamin pa</span>
+                        <i class="fa-solid fa-arrow-right text-[10px] transition-transform duration-300 group-hover/btn:translate-x-1.5"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+    <!-- Values Section -->
+ <!-- Filipino Values Section with 3D Totem Matrix Upgrade -->
+<section id="values" class="py-24 px-4 bg-transparent relative z-10 overflow-hidden" style="perspective: 1200px;">
+    <!-- Immersive Ambient Light Waves beneath cards -->
+    <div class="absolute bottom-10 left-10 w-80 h-80 rounded-full bg-[#D97706]/5 blur-[100px] pointer-events-none animate-pulse"></div>
+    <div class="absolute top-10 right-10 w-80 h-80 rounded-full bg-[#4A3728]/5 blur-[100px] pointer-events-none animate-pulse" style="animation-delay: 2s;"></div>
+
+    <div class="container mx-auto relative z-10">
+        <!-- Next-Gen Cinematic Section Header -->
+        <div class="text-center mb-16 select-none">
+            <span class="text-xs font-black uppercase tracking-[0.45em] text-[#D97706] block mb-2" style="font-family: 'Poppins', sans-serif;">
+                💎 MGA TIYAK NA KATANGIAN
+            </span>
+            <h2 class="text-3xl md:text-5xl font-black text-[#4A3728] tracking-tight uppercase" style="font-family: 'Cinzel', serif;">
+                Mga Pagpapahalagang Pilipino
+            </h2>
+            <div class="w-16 h-[2.5px] bg-gradient-to-r from-transparent via-[#D97706] to-transparent mx-auto mt-3"></div>
+        </div>
+
+        <!-- Advanced CSS Animation Engine for Totem Panels -->
+        <style>
+            /* The 3D Totem Panel Architecture */
+            .totem-value-card {
+                background: rgba(255, 255, 255, 0.4);
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+                border: 1px solid rgba(255, 255, 255, 0.5);
+                transform-style: preserve-3d;
+                transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), 
+                            background 0.5s ease, 
+                            border-color 0.5s ease,
+                            box-shadow 0.6s ease;
+            }
+
+            /* Pro-Level Interactive 3D Rotation Shift on Hover */
+            .totem-value-card:hover {
+                transform: translateY(-12px) rotateY(6deg) scale(1.02);
+                background: rgba(255, 255, 255, 0.9);
+                border-color: rgba(217, 119, 6, 0.35);
+                box-shadow: 0 30px 60px rgba(74, 55, 40, 0.14), 0 0 30px rgba(217, 119, 6, 0.03);
+            }
+
+            /* Spatial Depth Layers for Elements */
+            .totem-parallax-icon {
+                transform: translateZ(40px);
+                transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.4s ease, shadow 0.4s ease;
+            }
+            .totem-parallax-title {
+                transform: translateZ(25px);
+                transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+            .totem-parallax-text {
+                transform: translateZ(15px);
+                transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+
+            /* Icon Movement Dynamics */
+            .totem-value-card:hover .totem-parallax-icon {
+                transform: translateZ(55px) scale(1.08) rotate(8deg);
+                background: #D97706;
+                color: #FFFFFF !important;
+                box-shadow: 0 12px 25px rgba(217, 119, 6, 0.35);
+            }
+            .totem-value-card:hover .totem-parallax-icon i {
+                color: #FFFFFF !important;
+            }
+
+            /* Gold Light Reflection Sweep on Card Base */
+            .totem-value-card::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255, 215, 138, 0.25), transparent);
+                transition: all 0.7s ease;
+                pointer-events: none;
+                z-index: 5;
+            }
+            .totem-value-card:hover::before {
+                left: 100%;
+            }
+
+            /* Click Rebound Compression Feedback */
+            .totem-value-card:active {
+                transform: scale(0.96) translateY(-4px);
+                transition: transform 0.1s ease;
+            }
+        </style>
+
+        <!-- The Totem Grid Assembly -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto" style="font-family: 'Poppins', sans-serif;">
+            
+            <!-- CARD 1: Bayanihan -->
+            <div class="totem-value-card p-6 rounded-[28px] cursor-pointer text-center group flex flex-col items-center justify-between" 
+                 onclick="openValue('bayanihan')">
+                <div class="flex flex-col items-center w-full">
+                    <!-- Premium Geometric Shield Frame Holder for Icon -->
+                    <div class="totem-parallax-icon w-16 h-16 bg-[#D97706]/10 rounded-2xl flex items-center justify-center mb-6 text-[#D97706]">
+                        <i class="fa-solid fa-users text-2xl transition-colors duration-300"></i>
+                    </div>
+                    <h3 class="totem-parallax-title text-xl font-black text-[#4A3728] tracking-tight mb-3 transition-colors duration-300 group-hover:text-[#D97706]">
+                        Bayanihan
+                    </h3>
+                    <p class="totem-parallax-text text-stone-500 text-sm leading-relaxed font-medium px-1">
+                        Pagtutulungan at kusang-loob na pagkakaisa sa pamayanan nang walang hinihintay na anumang kapalit.
+                    </p>
+                </div>
+            </div>
+
+            <!-- CARD 2: Pakikipagkapwa -->
+            <div class="totem-value-card p-6 rounded-[28px] cursor-pointer text-center group flex flex-col items-center justify-between" 
+                 onclick="openValue('kapwa')">
+                <div class="flex flex-col items-center w-full">
+                    <div class="totem-parallax-icon w-16 h-16 bg-[#D97706]/10 rounded-2xl flex items-center justify-center mb-6 text-[#D97706]">
+                        <i class="fa-solid fa-handshake-angle text-2xl transition-colors duration-300"></i>
+                    </div>
+                    <h3 class="totem-parallax-title text-xl font-black text-[#4A3728] tracking-tight mb-3 transition-colors duration-300 group-hover:text-[#D97706]">
+                        Pakikipagkapwa
+                    </h3>
+                    <p class="totem-parallax-text text-stone-500 text-sm leading-relaxed font-medium px-1">
+                        Ang taos-pusong pagtanggap at pagrespeto sa kapwa bilang kapantay, kapatid, at mahalagang bahagi ng sarili.
+                    </p>
+                </div>
+            </div>
+
+            <!-- CARD 3: Paggalang -->
+            <div class="totem-value-card p-6 rounded-[28px] cursor-pointer text-center group flex flex-col items-center justify-between" 
+                 onclick="openValue('paggalang')">
+                <div class="flex flex-col items-center w-full">
+                    <div class="totem-parallax-icon w-16 h-16 bg-[#D97706]/10 rounded-2xl flex items-center justify-center mb-6 text-[#D97706]">
+                        <i class="fa-solid fa-award text-2xl transition-colors duration-300"></i>
+                    </div>
+                    <h3 class="totem-parallax-title text-xl font-black text-[#4A3728] tracking-tight mb-3 transition-colors duration-300 group-hover:text-[#D97706]">
+                        Paggalang
+                    </h3>
+                    <p class="totem-parallax-text text-stone-500 text-sm leading-relaxed font-medium px-1">
+                        Tradisiyunal na pagbibigay-galang sa mga nakatatanda sa pamamagitan ng pagmamano at paggamit ng mga salitang "po" at "opo".
+                    </p>
+                </div>
+            </div>
+
+            <!-- CARD 4: Pagmamalasakit -->
+            <div class="totem-value-card p-6 rounded-[28px] cursor-pointer text-center group flex flex-col items-center justify-between" 
+                 onclick="openValue('malasakit')">
+                <div class="flex flex-col items-center w-full">
+                    <div class="totem-parallax-icon w-16 h-16 bg-[#D97706]/10 rounded-2xl flex items-center justify-center mb-6 text-[#D97706]">
+                        <i class="fa-solid fa-heart text-2xl transition-colors duration-300"></i>
+                    </div>
+                    <h3 class="totem-parallax-title text-xl font-black text-[#4A3728] tracking-tight mb-3 transition-colors duration-300 group-hover:text-[#D97706]">
+                        Pagmamalasakit
+                    </h3>
+                    <p class="totem-parallax-text text-stone-500 text-sm leading-relaxed font-medium px-1">
+                        Aktibong pagkalinga, pag-unawa, at pagtataguyod sa pangkalahatang kapakanan at kaligtasan ng buong komunidad.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+    <!-- Gallery Section -->
+  <!-- Interactive 3D Polaroid Album / Gallery Section -->
+<section id="gallery" class="py-24 px-4 bg-transparent relative z-10 overflow-hidden" style="perspective: 1500px;">
+    
+    <!-- Bg -->
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] rounded-full bg-gradient-to-tr from-[#D97706]/5 to-transparent blur-[120px] pointer-events-none z-0"></div>
+
+    <div class="container mx-auto relative z-10">
+        <!-- Scrapbook Header -->
+        <div class="text-center mb-16 select-none">
+            <span class="text-xs font-black uppercase tracking-[0.45em] text-[#D97706] block mb-2" style="font-family: 'Poppins', sans-serif;">
+                📸 RETRATO NG PAMANANG PILIPINO
+            </span>
+            <h2 class="text-3xl md:text-4xl font-black text-[#4A3728] tracking-tight uppercase" style="font-family: 'Cinzel', serif;">
+                Aklat ng mga Larawan
+            </h2>
+            <div class="w-16 h-[2.5px] bg-gradient-to-r from-transparent via-[#D97706] to-transparent mx-auto mt-3 mb-4"></div>
+            <p class="text-sm text-stone-500 max-w-sm mx-auto font-medium" style="font-family: 'Poppins', sans-serif;">
+                ✨ <span class="text-[#D97706]">I-hover at pindutin ang mga larawan</span> upang galugarin ang makasaysayang ganda ng ating bayan.
+            </p>
+        </div>
+
+        <!-- Custom 3D Polaroid Photo CSS Engine -->
+        <style>
+            .polaroid-scrapbook-grid {
+                transform-style: preserve-3d;
+            }
+
+            /* Authentic Layered Polaroid Card Styling */
+            .polaroid-photo-frame {
+                background: #ffffff;
+                padding: 12px 12px 28px 12px; /* Thicker white space at the bottom for an authentic look */
+                border: 1px solid rgba(74, 55, 40, 0.12);
+                box-shadow: 3px 6px 15px rgba(74, 55, 40, 0.08);
+                transform-style: preserve-3d;
+                transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1), 
+                            box-shadow 0.6s ease,
+                            border-color 0.3s;
+            }
+
+            /*  Random Rotation Angles */
+            .photo-turn-1 { transform: rotate(-3deg) translateY(0); }
+            .photo-turn-2 { transform: rotate(2deg) translateY(4px); }
+            .photo-turn-3 { transform: rotate(-1.5deg) translateY(-2px); }
+            .photo-turn-4 { transform: rotate(3deg) translateY(2px); }
+            .photo-turn-5 { transform: rotate(-2.5deg) translateY(3px); }
+            .photo-turn-6 { transform: rotate(1.5deg) translateY(-4px); }
+            .photo-turn-7 { transform: rotate(-4deg) translateY(1px); }
+            .photo-turn-8 { transform: rotate(2.5deg) translateY(5px); }
+
+            /* 3d na ewan */
+            .polaroid-photo-frame:hover {
+                transform: rotate(0deg) translateY(-14px) rotateX(8deg) scale(1.05) !important;
+                box-shadow: 0 25px 50px rgba(44, 26, 17, 0.18), 0 0 20px rgba(217, 119, 6, 0.04);
+                border-color: rgba(217, 119, 6, 0.3);
+                z-index: 50;
+            }
+
+            /* Vintage color eme eme */
+            .polaroid-photo-frame img {
+                filter: sepia(0.2) contrast(0.95);
+                transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), filter 0.5s ease;
+            }
+            .polaroid-photo-frame:hover img {
+                filter: sepia(0) contrast(1);
+                transform: scale(1.06);
+            }
+
+            /* Txt Caption inside Polaroid */
+            .polaroid-caption {
+                transform: translateZ(20px);
+                font-family: 'Poppins', sans-serif;
+                color: #5A4838;
+                font-weight: 700;
+                font-size: 11px;
+                letter-spacing: 0.5px;
+                transition: color 0.3s ease;
+            }
+            .polaroid-photo-frame:hover .polaroid-caption {
+                color: #D97706;
+            }
+        </style>
+
+        <!-- The Polaroid Grid Layout -->
+        <div class="polaroid-scrapbook-grid grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
+            
+            <!-- PHOTO 1: Plaza -->
+            <div class="polaroid-photo-frame photo-turn-1 cursor-pointer rounded-sm" onclick="galleryHapticTrigger(this, 'img1')">
+                <div class="w-full h-44 overflow-hidden bg-stone-100 shadow-inner rounded-sm mb-3">
+                    <img src="newplaza.png" alt="Plaza ng Bayan" class="w-full h-full object-cover" />
+                </div>
+                <div class="polaroid-caption text-center uppercase">Plaza ng Bayan</div>
+            </div>
+
+            <!-- PHOTO 2: Simbahan -->
+            <div class="polaroid-photo-frame photo-turn-2 cursor-pointer rounded-sm" onclick="galleryHapticTrigger(this, 'img2')">
+                <div class="w-full h-44 overflow-hidden bg-stone-100 shadow-inner rounded-sm mb-3">
+                    <img src="simbahan.png" alt="Simbahan" class="w-full h-full object-cover" />
+                </div>
+                <div class="polaroid-caption text-center uppercase">Simbahan</div>
+            </div>
+
+            <!-- PHOTO 3: Palengke -->
+            <div class="polaroid-photo-frame photo-turn-3 cursor-pointer rounded-sm" onclick="galleryHapticTrigger(this, 'img3')">
+                <div class="w-full h-44 overflow-hidden bg-stone-100 shadow-inner rounded-sm mb-3">
+                    <img src="palengke.png" alt="Palengke" class="w-full h-full object-cover" />
+                </div>
+                <div class="polaroid-caption text-center uppercase">Palengke</div>
+            </div>
+
+            <!-- PHOTO 4: Parada -->
+            <div class="polaroid-photo-frame photo-turn-4 cursor-pointer rounded-sm" onclick="galleryHapticTrigger(this, 'img4')">
+                <div class="w-full h-44 overflow-hidden bg-stone-100 shadow-inner rounded-sm mb-3">
+                    <img src="fiesta.png" alt="Pista" class="w-full h-full object-cover" />
+                </div>
+                <div class="polaroid-caption text-center uppercase">Parada ng Pista</div>
+            </div>
+
+            <!-- PHOTO 5: Bukirin -->
+            <div class="polaroid-photo-frame photo-turn-5 cursor-pointer rounded-sm" onclick="galleryHapticTrigger(this, 'img5')">
+                <div class="w-full h-44 overflow-hidden bg-stone-100 shadow-inner rounded-sm mb-3">
+                    <img src="farm.png" alt="Bukirin" class="w-full h-full object-cover" />
+                </div>
+                <div class="polaroid-caption text-center uppercase">Bukirin</div>
+            </div>
+
+            <!-- PHOTO 6: Pagkain -->
+            <div class="polaroid-photo-frame photo-turn-6 cursor-pointer rounded-sm" onclick="galleryHapticTrigger(this, 'img6')">
+                <div class="w-full h-44 overflow-hidden bg-stone-100 shadow-inner rounded-sm mb-3">
+                    <img src="halo-halo.png" alt="Lutuing Lokal" class="w-full h-full object-cover" />
+                </div>
+                <div class="polaroid-caption text-center uppercase">Lutuing Lokal</div>
+            </div>
+
+            <!-- PHOTO 7: Barangay -->
+            <div class="polaroid-photo-frame photo-turn-7 cursor-pointer rounded-sm" onclick="galleryHapticTrigger(this, 'img7')">
+                <div class="w-full h-44 overflow-hidden bg-stone-100 shadow-inner rounded-sm mb-3">
+                    <img src="brgy.png" alt="Buhay sa Barangay" class="w-full h-full object-cover" />
+                </div>
+                <div class="polaroid-caption text-center uppercase">Buhay sa Barangay</div>
+            </div>
+
+            <!-- PHOTO 8: Tanawin -->
+            <div class="polaroid-photo-frame photo-turn-8 cursor-pointer rounded-sm" onclick="galleryHapticTrigger(this, 'img8')">
+                <div class="w-full h-44 overflow-hidden bg-stone-100 shadow-inner rounded-sm mb-3">
+                    <img src="tanawan.png" alt="Tanawin ng Lugar" class="w-full h-full object-cover" />
+                </div>
+                <div class="polaroid-caption text-center uppercase">Tanawin ng Lugar</div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- ========================================================
+     Interactions
+     ======================================================== -->
+<script>
+    function galleryHapticTrigger(photoElement, imgID) {
+        // High-End Micro Interaction: Provides a brief physical pop down before activating the modal window
+        photoElement.style.transform = "scale(0.95) rotateX(-5deg)";
+        
+        setTimeout(() => {
+            photoElement.style.transform = ""; // Instantly recover CSS rules
+            if (typeof window.openGalleryImage === 'function') {
+                window.openGalleryImage(imgID);
+            }
+        }, 130);
+    }
+</script>
+
+
+    <!-- Featurez Cowie -->
+    <div class="cow-narrator" id="cowTalker">
+        <div class="dialog-box" id="bubble">Moo! Pindutin mo ako!</div>
+        <div class="cow-container" id="cowPet">
+            <div class="horn left"></div>
+            <div class="horn right"></div>
+            <div class="ear left"></div>
+            <div class="ear right"></div>
+            <div class="cow-head">
+                <div class="spot-left"></div>
+                <div class="spot-right"></div>
+                <div class="eye left"></div>
+                <div class="eye right"></div>
+                <div class="snout">
+                    <div class="nostril left"></div>
+                    <div class="nostril right"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-white py-8 px-4 text-center">
+        <div class="container mx-auto">
+            <p class="text-lg font-semibold">Padre Garcia, Batangas: Mapa ng Kultura at Kasaysayan</p>
+            <p class="text-sm mt-2 opacity-80">Isang proyekto ng mag-aaral | Ibinahagi upang kilalanin ang ganda ng Padre Garcia</p>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const menuToggle = document.getElementById('menu-toggle');
+        const mobileMenu = document.getElementById('mobile-menu');
+        menuToggle.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+                mobileMenu.classList.add('hidden');
+            });
+        });
+
+        const fadeElements = document.querySelectorAll('.fade-in');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, { threshold: 0.1 });
+        fadeElements.forEach(el => observer.observe(el));
+
+        // Map
+        const padreGarciaCoords = [13.8822, 121.2134];
+        const mapZoomLevel = 13;
+        const map = L.map('map-container').setView(padreGarciaCoords, mapZoomLevel);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 18
+        }).addTo(map);
+
+        const mainMarker = L.marker(padreGarciaCoords).addTo(map);
+        mainMarker.bindPopup(`
+            <strong>Padre Garcia, Batangas</strong><br>
+            Bayan ng Padre Garcia<br>
+            Rehiyon ng Calabarzon, Pilipinas
+        `).openPopup();
+
+        const keyLocations = [
+            { name: "Bulwagang Bayan", coords: [13.8805, 121.2118], info: "Sentro ng pamahalaan ng bayan" },
+            { name: "Pampublikong Palengke", coords: [13.8830, 121.2142], info: "Pangunahing sentro ng kalakalan" },
+            { name: "Parokya ni San Isidro Labrador", coords: [13.8812, 121.2125], info: "Makasaysayang simbahan ng bayan" }
+        ];
+
+        keyLocations.forEach(loc => {
+            L.marker(loc.coords).addTo(map).bindPopup(`<strong>${loc.name}</strong><br>${loc.info}`);
+        });
+
+        const modal = document.getElementById('info-modal');
+        const modalContent = document.getElementById('modal-content');
+        const modalTitle = document.getElementById('modal-title');
+        const modalBody = document.getElementById('modal-body');
+
+        function openInfo() {
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                modalContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function closeInfo() {
+            modalContent.classList.remove('scale-100', 'opacity-100');
+            modalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        function showDetails(id) {
+            document.querySelectorAll('.info-box').forEach(box => box.classList.add('hidden'));
+            document.querySelectorAll('.timeline-item').forEach(item => item.classList.remove('active'));
+            document.getElementById('details' + id.replace('item', '')).classList.remove('hidden');
+            document.getElementById(id).classList.add('active');
+        }
+
+        function openTradition(type) {
+            modalTitle.textContent = type === 'religious' ? 'Matibay na Pananampalataya' : type === 'harvest' ? 'Pasasalamat sa Ani' : 'Mga Kaugalian';
+            modalBody.innerHTML = type === 'religious' ? `<p>Ang pananampalataya ay nasa puso ng bawat pamilya sa Padre Garcia.</p>` : type === 'harvest' ? `<p>Tuwing may masaganang ani, nagdaraos ng salu-salo bilang pasasalamat sa Maykapal.</p>` : `<p>Ang bawat mahalagang pangyayari sa buhay ay pinagsasaluhan ng buong pamayanan.</p>`;
+            openInfo();
+        }
+
+        function openFestival(type) {
+            modalTitle.textContent = type === 'kambingan' ? 'Pistang Kambingan' : 'Tatak Garciano';
+            modalBody.innerHTML = type === 'kambingan' ? `<p>Ipinagdiriwang ang industriya ng paghahayupan sa pamamagitan ng mga palatandaan ng yaman ng bayan.</p>` : `<p>Ang Moog ng lumang simbahan at Rodeo Ala Garciano ay sumasalamin sa kasaysayan,pananampalataya, at kultura ng Padre Garcia,Batangas. Ipinapakita ng moog ang makasaysayang pamana ng bayan,habang itinatampok ng Rodeo Ala Garciano ang tradisyon ng pag-aalaga at kalakalan ng baka..</p>`;
+            openInfo();
+        }
+
+        function openCattleDetails() {
+            modalTitle.textContent = 'Tungkol sa Kalakalan ng Baka';
+            modalBody.innerHTML = `<p>Tuwing Martes at Biyernes, dinadala ang mga baka sa palengke para ipagbili. Mahigit 1,000 ulo ng baka ang dumarating araw-araw!</p>`;
+            openInfo();
+        }
+
+        function openValue(type) {
+            modalTitle.textContent = type === 'bayanihan' ? 'Bayanihan' : type === 'kapwa' ? 'Pakikipagkapwa' : type === 'paggalang' ? 'Paggalang' : 'Pagmamalasakit';
+            modalBody.innerHTML = type === 'bayanihan' ? `<p>Ang pagtutulungan ng buong pamayanan nang walang hinihinging bayad.</p>` : type === 'kapwa' ? `<p>Ang pagtrato sa iba bilang kapwa at hindi estranghero.</p>` : type === 'paggalang' ? `<p>Paggamit ng "po" at "opo" at pagmamano sa mga nakatatanda.</p>` : `<p>Pag-aalaga sa kapakanan ng buong bayan.</p>`;
+            openInfo();
+        }
+
+       
+        
+
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) closeInfo();
+        });
+
+        // COW + TRIVIA
+        const cowPet = document.getElementById('cowPet');
+        const bubble = document.getElementById('bubble');
+
+        const triviaList = [
+            { text: " Bagamat sikat ito sa baka, ang kanilang bilihan tuwing Biyernes ay dinarayo rin para sa kalakalan ng mga kalabaw, kabayo, at kambing.", emotion: "happy" },
+            { text: "Noong una, ang pangalan ng bayan ay 'Sambat' bago ito pinalitan!", emotion: "surprised" },
+            { text: "Mahigit 1,000 ulo ng baka ang ipinagbibili tuwing Martes at Biyernes!", emotion: "wink" },
+            { text: " Bukod sa kapistahan ng baka, mayroon din silang relihiyosong tradisyon na tinatawag na 'Karakol' tuwing unang Linggo ng Oktubre. Ito ay isang masiglang prusisyon ng pagsasayaw para sa kanilang patronal feast.", emotion: "sleepy" },
+            { text: "Ang Bawi Eco Trail sa Padre Garcia ay kilala sa tawag na 'The Green Heart of Padre Garcia'", emotion: "happy" },
+            { text: "Ang industriya ng baka ang naging pangunahing yaman ng bayan sa loob ng mahigit 70 taon.", emotion: "surprised" },
+            { text: "Ang Most Holy Rosary Parish ay itinayo noong 1716 ng mga parinig Augustinian. Ang kasaysayan at relikya nito ay mas matanda pa sa Basilica ng Batangas City.", emotion: "wink" },
+            { text: "Ipinangalan ang bayan kay Padre Vicente Garcia, tagapagtanggol ng Noli Me Tangere.", emotion: "sleepy" }
+        ];
+
+        let currentIndex = 0;
+
+        function triggerInteraction() {
+            cowPet.classList.remove('happy', 'surprised', 'sleepy', 'wink', 'celebrate', 'wow', 'excited');
+            
+            const state = triviaList[currentIndex];
+            bubble.innerText = state.text;
+            bubble.style.display = 'block';
+            
+            if(state.emotion !== 'normal') {
+                cowPet.classList.add(state.emotion);
+            }
+
+            cowPet.classList.remove('bounce-active');
+            void cowPet.offsetWidth;
+            cowPet.classList.add('bounce-active');
+
+            currentIndex = (currentIndex + 1) % triviaList.length;
+        }
+
+        cowPet.addEventListener('click', triggerInteraction);
+        setInterval(() => {
+            triggerInteraction();
+        }, 60000);
+    </script>
+
+
+<!-- CUTE COW CURSOR AND POPPING CONTENT SECTION -->
+<div id="cow-interactive-container">
+    <style>
+        /* Changes the cursor to a real cow image across the whole page */
+        html, body, #cow-interactive-container, #cow-interactive-container * {
+            /* Loads a 32x32 transparent pixel-art cow cursor. The '0 0' sets the clickable hotspot to the top-left corner. */
+            cursor: url("https://githubusercontent.com") 0 0, auto !important;
+        }
+
+        /* Styles for the pop-up text animation */
+        .moo-pop {
+            position: absolute;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            font-weight: bold;
+            font-size: 24px;
+            color: #5c4033;
+            pointer-events: none;
+            z-index: 99999; /* Keeps text above other page elements */
+            animation: floatUp 0.8s ease-out forwards;
+        }
+
+        /* The floating and fading animation */
+        @keyframes floatUp {
+            0% {
+                transform: translate(-50%, -50%) scale(0.5);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -120%) scale(1.4);
+                opacity: 0;
+            }
+        }
+    </style>
+
+    <script>
+        (function() {
+            // Moo
+
+            document.addEventListener('click', function(e) {
+                // Play sound and reset it instantly if clicked multiple times
+                cowSound.currentTime = 0; 
+                cowSound.play().catch(err => console.log("Audio waiting for a user click."));
+
+                // Create the text pop element
+                const moo = document.createElement('div');
+                moo.classList.add('moo-pop');
+                moo.innerText = 'Moo!';
+                
+                // Position text directly over coordinates
+                moo.style.left = e.pageX + 'px';
+                moo.style.top = e.pageY + 'px';
+                
+                // Slight random rotation angle for a cuter look
+                const randomRotation = Math.floor(Math.random() * 40) - 20;
+                moo.style.transform = `rotate(${randomRotation}deg)`;
+
+                document.body.appendChild(moo);
+
+                // Clean up element after animation is complete
+                setTimeout(() => {
+                    moo.remove();
+                }, 800);
+            });
+        })();
+    </script>
+</div>
+ 
+<!-- START NEW PASTEL ORANGE PLAYGROUND ENTRY PORTAL -->
+<div id="playground-entry-overlay" style="position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; display: flex !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; z-index: 99999999 !important; overflow: hidden !important; background: linear-gradient(135deg, #ffa801, #ff7f50, #ff9a9e) !important; background-size: 300% 300% !important; animation: playgroundSkyFlow 14s ease infinite !important; transition: all 0.8s cubic-bezier(0.76, 0, 0.24, 1) !important;">
+    
+    <!-- CORE STYLING & ANIMATIONS VECTOR PARAMS -->
+    <style>
+        @keyframes playgroundSkyFlow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @keyframes smoothCardPop { 0% { transform: scale(0.7) cubic-bezier(0.34, 1.56, 0.64, 1); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes playgroundCloudDrift { 0% { left: -25%; } 100% { left: 125%; } }
+        @keyframes playgroundBearPeek { 0% { transform: translateY(75px); } 50% { transform: translateY(0px) rotate(-5deg); } 100% { transform: translateY(75px); } }
+        @keyframes sunRaySpin { 100% { transform: rotate(360deg); } }
+        @keyframes swingStarCluster { 0% { transform: rotate(-12deg); } 100% { transform: rotate(12deg); } }
+        @keyframes popBlastVector { 0% { transform: translate(-50%, -50%) scale(0.1) rotate(0deg); opacity: 1; } 100% { transform: translate(var(--px), var(--py)) scale(1.4) rotate(var(--pr)); opacity: 0; } }
+        
+        /* Playground Hills Surface Setup (No Grass Textures) */
+        .playground-hill-layer { position: absolute; bottom: 0; width: 150vw; height: 36vh; z-index: 3; border-radius: 50% 50% 0 0; pointer-events: none; }
+        .bg-hill-orange { background: #ffa801; left: -25vw; bottom: -3vh; opacity: 0.8; }
+        .fg-hill-terracotta { background: #ff7f50; left: -15vw; bottom: -8vh; }
+
+        /* Rotating Background Elements */
+        .spinning-sun-wheel { position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; opacity: 0.12; z-index: 1; background: repeating-conic-gradient(from 0deg, #ffffff 0deg 15deg, transparent 15deg 30deg); animation: sunRaySpin 100s linear infinite; pointer-events: none; }
+        .spinning-ferris-wheel { position: absolute; bottom: 22vh; left: 8%; font-size: 130px; z-index: 2; opacity: 0.22; animation: sunRaySpin 30s linear infinite; user-select: none; pointer-events: none; }
+        .swinging-star-cluster { position: absolute; top: 0; right: 12%; font-size: 45px; z-index: 2; transform-origin: top center; animation: swingStarCluster 3.5s ease-in-out infinite alternate; user-select: none; pointer-events: none; }
+
+        /* The Kawaii Presentation Board Card */
+        .playground-popup-card {
+            width: 90%; max-width: 680px; padding: 50px 35px; text-align: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; z-index: 10;
+            background: rgba(255, 255, 255, 0.97); border: 4px solid #ffffff; border-radius: 40px;
+            box-shadow: 0 25px 55px rgba(214, 109, 3, 0.2); animation: smoothCardPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        .playground-interactive-btn {
+            background: linear-gradient(45deg, #d66d03, #ff7f50); color: #ffffff; border: 4px solid #ffffff;
+            padding: 18px 55px; font-size: 24px; font-weight: 900; border-radius: 40px; cursor: pointer;
+            box-shadow: 0 8px 0px #a35202; transition: all 0.1s cubic-bezier(0.25, 0.8, 0.25, 1); outline: none; margin-top: 15px;
+        }
+        .playground-interactive-btn:hover { background: linear-gradient(45deg, #ff6348, #ffa502); transform: scale(1.03); }
+        .playground-interactive-btn:active { transform: translateY(6px) scale(0.98); box-shadow: 0 2px 0px #a35202; }
+        .playground-blast-emoji { position: fixed; font-size: 36px; pointer-events: none; z-index: 200000000; animation: popBlastVector 1.3s cubic-bezier(0.1, 0.85, 0.25, 1) forwards; }
+    </style>
+
+    <!-- 1. AMBIENT BACKGROUND SYSTEM LIGHTING -->
+    <div class="spinning-sun-wheel"></div>
+    <div class="spinning-ferris-wheel">🎡</div>
+    <div class="swinging-star-cluster">⭐✨</div>
+    <div style="position: absolute; bottom: 20vh; right: 10%; font-size: 95px; z-index: 2; opacity: 0.25; user-select: none; pointer-events: none;">🛝</div>
+
+    <!-- 2. LAYERED ORANGE SURFACE PASTURES -->
+    <div class="playground-hill-layer bg-hill-orange"></div>
+    <div class="playground-hill-layer fg-hill-terracotta"></div>
+
+    <!-- 3. DRIFTING OVERHEAD WEATHER PARTICLES -->
+    <div style="position: absolute; font-size: 65px; top: 10%; animation: playgroundCloudDrift 28s linear infinite; pointer-events: none; user-select: none; z-index: 2;">☁️🎈</div>
+    <div style="position: absolute; font-size: 55px; top: 26%; animation: playgroundCloudDrift 42s linear infinite; animation-delay: -15s; pointer-events: none; user-select: none; z-index: 2;">☁️💖</div>
+    <div style="position: absolute; bottom: 8vh; left: 18%; font-size: 105px; animation: playgroundBearPeek 5s ease-in-out infinite alternate; pointer-events: none; user-select: none; z-index: 4;"></div>
+
+    <!-- 4. CENTER STAGE BRANDING DIALOG PANEL CARD -->
+    <div class="playground-popup-card">
+        <div style="display: inline-block; background: linear-gradient(45deg, #d66d03, #ff7f50); color: white; padding: 6px 22px; font-size: 14px; font-weight: 800; border-radius: 20px; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(214,109,3,0.25);">⭐ MUNICIPALITY OF PADRE GARCIA ⭐</div>
+        <h2 style="font-size: 2.9rem; margin: 0 0 15px 0; color: #432c1c; font-weight: 900; line-height: 1.25; letter-spacing: -0.5px;">Disiplinado at Mabuting Tao!</h2>
+        <p style="font-size: 1.25rem; margin: 0 0 35px 0; color: #523a28; font-weight: 600; line-height: 1.6;">Maligayang Pagdating sa Cattle Capital! Ihanda ang inyong sarili sa isang makulay at masayang paggalugad sa ating kasaysayan at kultura. ✨🎈</p>
+        
+        <button type="button" class="playground-interactive-btn" onclick="executePlaygroundPortalDismissal()">
+            Simulan ang Paggalugad! 🚜💨
+        </button>
+    </div>
+
+    <!-- 5. ENGINE CONTROL EXECUTION ENGINE -->
+    <script>
+        var portalAudioEngine = null;
+        try {
+            portalAudioEngine = new Audio('https://mixkit.co');
+        } catch(audioSetupError) {
+            console.log("Audio pipeline loaded fallback.");
+        }
+
+        function executePlaygroundPortalDismissal() {
+            var overlayModal = document.getElementById('playground-entry-overlay');
+            var primaryBtn = document.querySelector('.playground-interactive-btn');
+            if (!overlayModal) return;
+
+            // Pinpoint safe click emission source coordinates
+            var bounds = primaryBtn ? primaryBtn.getBoundingClientRect() : { left: window.innerWidth/2, top: window.innerHeight/2, width: 0, height: 0 };
+            var clickX = bounds.left + (bounds.width / 2);
+            var clickY = bounds.top + (bounds.height / 2);
+
+            // Kawaii theme particle library array definitions
+            var emojiBurstLibrary = ['🎈', '🎡', '🛝', '✨', '💖', '🌸', '🌈', '🍊', '🐮', '🥛'];
+
+            // Run explosion particle generation canvas loops
+            for (var loopX = 0; loopX < 60; loopX++) {
+                var elementParticle = document.createElement('div');
+                elementParticle.className = 'playground-blast-emoji';
+                elementParticle.innerText = emojiBurstLibrary[Math.floor(Math.random() * emojiBurstLibrary.length)];
+                elementParticle.style.left = clickX + 'px';
+                elementParticle.style.top = clickY + 'px';
+
+                var spatialAngle = Math.random() * Math.PI * 2;
+                var throwVelocityDistance = Math.random() * 420 + 140;
+                var destinationTranslateX = Math.cos(spatialAngle) * throwVelocityDistance - 50 + 'px';
+                var destinationTranslateY = Math.sin(spatialAngle) * throwVelocityDistance - 50 + 'px';
+                var directionalRotationDeg = Math.random() * 720 - 360 + 'deg';
+
+                elementParticle.style.setProperty('--px', destinationTranslateX);
+                elementParticle.style.setProperty('--py', destinationTranslateY);
+                elementParticle.style.setProperty('--pr', directionalRotationDeg);
+
+                document.body.appendChild(elementParticle);
+
+                // Garbage collectors for loose vector elements
+                (function(garbageTarget) {
+                    setTimeout(function() { if (garbageTarget) garbageTarget.remove(); }, 1300);
+                })(elementParticle);
+            }
+
+            // Play background sound asset securely
+            if (portalAudioEngine) {
+                try {
+                    portalAudioEngine.currentTime = 0;
+                    portalAudioEngine.play();
+                } catch(audioExecutionError) {}
+            }
+
+            // Trigger safe modal fade out warp animations
+            overlayModal.style.opacity = '0';
+            overlayModal.style.transform = 'translateY(-100vh) scale(0.95)';
+            setTimeout(function() {
+                if (overlayModal) overlayModal.remove();
+            }, 850);
+        }
+    </script>
+</div>
+<!-- cursor -->
+
+<!-- ================================================================= -->
+<!-- START: NEW INTERACTIVE COW CURSOR & CLICK TEXT POP SECTION        -->
+<!-- ================================================================= -->
+<section id="interactive-cow-pop-section">
+    <style>
+        /* 1. Global Custom Cow Cursor Transformation */
+        html, body, #interactive-cow-pop-section, #interactive-cow-pop-section * {
+            cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://w3.org' width='32' height='32' style='font-size:24px'><text y='24'>🐮</text></svg>") 0 0, auto !important;
+        }
+
+        /* 2. Simple and Cute Framing Border (No Stickers) */
+        body::before {
+            content: ''; position: fixed; top: 16px; left: 16px; right: 16px; bottom: 16px;
+            border: 3px dashed #D2691E; border-radius: 20px; pointer-events: none; z-index: 99999; opacity: 0.3;
+        }
+
+        /* 3. Styles for the Click Text Pop Effect */
+        .moo-click-text {
+            position: absolute;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 800;
+            font-size: 22px;
+            color: #D2691E; /* Matches your terracotta orange accent color */
+            text-shadow: 2px 2px 0px #FFF8E7; /* Soft cream drop shadow */
+            pointer-events: none; /* Stops text from blocking your future clicks */
+            z-index: 100000;
+            animation: mooFloatAway 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+
+        /* Float, scale, and fade animation path sequence */
+        @keyframes mooFloatAway {
+            0% { transform: translate(-50%, -50%) scale(0.4); opacity: 1; }
+            100% { transform: translate(-50%, -130%) scale(1.3); opacity: 0; }
+        }
+    </style>
+
+    <script>
+        (function() {
+            // Load premium cow sound effect asset
+            var clickAddonSoundObj = new Audio('https://mixkit.co');
+
+            document.addEventListener('click', function(e) {
+                // 1. Instantly trigger audio pipeline
+                if (clickAddonSoundObj) {
+                    clickAddonSoundObj.currentTime = 0;
+                    clickAddonSoundObj.play().catch(function(){});
+                }
+
+                // 2. Generate and inject the temporary "Moo!" text node
+                var popSpan = document.createElement('span');
+                popSpan.className = 'moo-click-text';
+                popSpan.innerText = 'Moo! ';
+
+                // Assign the coordinate vectors right beneath the cursor position
+                popSpan.style.left = e.pageX + 'px';
+                popSpan.style.top = e.pageY + 'px';
+
+                // Apply a slight random rotation angle for a cuter vibe
+                var randomRotationDeg = Math.floor(Math.random() * 30) - 15; // -15deg to 15deg
+                popSpan.style.transform = 'rotate(' + randomRotationDeg + 'deg)';
+
+                document.body.appendChild(popSpan);
+
+                // 3. Clean up the item from the DOM tree memory once animation completes
+                setTimeout(function() {
+                    if (popSpan) popSpan.remove();
+                }, 800);
+            });
+        })();
+    </script>
+</section>
+<!-- ================================================================= -->
+<!-- END: NEW INTERACTIVE COW CURSOR & CLICK TEXT POP SECTION          -->
+<!-- ================================================================= -->
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#8B4513',      /* Saddle Brown */
+                        secondary: '#D2691E',    /* Terracotta */
+                        accent: '#FFD700',       /* Vibrant Gold */
+                        dark: '#3D1E05',         /* Deep Cocoa */
+                        light: '#FFFDF9',        /* Cream Cream */
+                        vibrantPink: '#FF007F',  /* Accent Neon Pink */
+                        vibrantBlue: '#00F0FF'   /* Accent Cyan */
+                    },
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+  
+
+
+</body>
+</html>
